@@ -22,11 +22,13 @@ fun main() {
     carrito.add(Producto("Audifonos Pro3", 25.0, 3))
 
 
+
+
     for (producto in carrito) {
         println("Producto agregado: ${producto.nombre}")
     }
 
-
+    mostrarDetalle(carrito)
     val subtotal = calcularSubtotal(carrito)
     val igv = calcularIGV(subtotal)
     val total = calcularTotal(subtotal, igv)
@@ -38,6 +40,17 @@ fun main() {
     println(String.format("TOTAL    : S/ %.2f", total))
 }
 
+fun mostrarDetalle(productos: List<Producto>) {
+    println("--------- DETALLE DEL CARRITO---------")
+    var i = 1
+    for (p in productos) {
+        val importe = p.precio * p.cantidad
+        println(String.format("%d. %-20s x%d S/ %8.2f",
+            i, p.nombre, p.cantidad, importe))
+        i++
+    }
+    println("---------------------------------------")
+}
 fun calcularSubtotal(productos: List<Producto>): Double {
     var subtotal = 0.0
     for (p in productos) {
