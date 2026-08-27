@@ -27,4 +27,4 @@ var (Mutable): Define una variable cuyo valor puede cambiar durante la ejecució
 
 
 ## Captura de Pantalla
-![Captura de pantalla 2026-08-27 032151.png](../../../Pictures/Screenshots/Captura%20de%20pantalla%202026-08-27%20032151.png)
+<img width="742" height="876" alt="Captura de pantalla 2026-08-27 040129" src="https://github.com/user-attachments/assets/918bf29b-0fd4-4ef5-81ae-e05e87e2db1e" />
