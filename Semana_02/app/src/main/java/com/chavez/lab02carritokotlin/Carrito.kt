@@ -22,8 +22,6 @@ fun main() {
     carrito.add(Producto("Audifonos Pro3", 25.0, 3))
 
 
-
-
     for (producto in carrito) {
         println("Producto agregado: ${producto.nombre}")
     }
