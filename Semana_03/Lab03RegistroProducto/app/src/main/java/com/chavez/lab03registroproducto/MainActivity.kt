@@ -33,7 +33,6 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
     var cantidad by remember { mutableStateOf("") }
     var mostrarResumen by remember { mutableStateOf(false) }
 
-
     var mensajeError by remember { mutableStateOf("") }
 
     Column(
@@ -65,7 +64,6 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-
         if (mensajeError.isNotEmpty()) {
             Text(
                 text = mensajeError,
@@ -81,9 +79,18 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
         ) {
             Button(
                 onClick = {
+                    val precioEsNumero = precio.toDoubleOrNull() != null
+                    val cantidadEsNumero = cantidad.toIntOrNull() != null
+
+                    // Correcciones manuales B2: Manejo de vacíos y conversión de tipos
                     if (nombre.isBlank() || precio.isBlank() || cantidad.isBlank()) {
-                        // Corrección manual B2: Mensaje de alerta personalizado y claro
                         mensajeError = "¡Atención! Debe llenar todos los campos antes de continuar."
+                        mostrarResumen = false
+                    } else if (!precioEsNumero) {
+                        mensajeError = "Error: El precio debe ser un número válido."
+                        mostrarResumen = false
+                    } else if (!cantidadEsNumero) {
+                        mensajeError = "Error: La cantidad debe ser un número entero."
                         mostrarResumen = false
                     } else {
                         mensajeError = ""
@@ -94,7 +101,6 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
                 Text("AGREGAR")
             }
 
-
             OutlinedButton(
                 onClick = {
                     nombre = ""
@@ -104,7 +110,6 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
                     mostrarResumen = false
                 }
             ) {
-
                 Text("LIMPIAR FORMULARIO")
             }
         }
