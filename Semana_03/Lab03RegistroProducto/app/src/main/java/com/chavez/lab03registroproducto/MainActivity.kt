@@ -33,7 +33,7 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
     var cantidad by remember { mutableStateOf("") }
     var mostrarResumen by remember { mutableStateOf(false) }
 
-    // Estado para controlar mensajes de error generados por IA
+
     var mensajeError by remember { mutableStateOf("") }
 
     Column(
@@ -65,7 +65,7 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Muestra el mensaje de error en rojo si existe algún campo vacío
+
         if (mensajeError.isNotEmpty()) {
             Text(
                 text = mensajeError,
@@ -82,7 +82,8 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
             Button(
                 onClick = {
                     if (nombre.isBlank() || precio.isBlank() || cantidad.isBlank()) {
-                        mensajeError = "Error: Todos los campos son obligatorios"
+                        // Corrección manual B2: Mensaje de alerta personalizado y claro
+                        mensajeError = "¡Atención! Debe llenar todos los campos antes de continuar."
                         mostrarResumen = false
                     } else {
                         mensajeError = ""
@@ -93,7 +94,7 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
                 Text("AGREGAR")
             }
 
-            // Botón Limpiar para resetear formulario
+
             OutlinedButton(
                 onClick = {
                     nombre = ""
@@ -103,7 +104,8 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
                     mostrarResumen = false
                 }
             ) {
-                Text("Limpiar")
+
+                Text("LIMPIAR FORMULARIO")
             }
         }
 
