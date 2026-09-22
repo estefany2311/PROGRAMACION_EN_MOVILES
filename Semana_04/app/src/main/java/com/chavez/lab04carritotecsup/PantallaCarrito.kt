@@ -7,8 +7,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,21 +25,20 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import java.util.Locale
 
 @Composable
 fun PantallaCarrito() {
-
-    // Estados para el formulario
     var nombre by remember { mutableStateOf("") }
     var precio by remember { mutableStateOf("") }
     var cantidad by remember { mutableStateOf("") }
 
-    // Lista observable de productos
     val productos = remember { mutableStateListOf<Producto>() }
 
     Column(
@@ -80,7 +87,6 @@ fun PantallaCarrito() {
                 val cantidadNum = cantidad.toIntOrNull() ?: 0
                 if (nombre.isNotBlank() && precioNum > 0 && cantidadNum > 0) {
                     productos.add(Producto(nombre, precioNum, cantidadNum))
-                    // Limpia los 3 campos asignándoles ""
                     nombre = ""
                     precio = ""
                     cantidad = ""
@@ -93,9 +99,6 @@ fun PantallaCarrito() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Text temporal para comprobar que aumenta al agregar
-        //Text("Productos: ${productos.size}")
-        // se cambio por LazyColumn
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -103,9 +106,53 @@ fun PantallaCarrito() {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(productos) { producto ->
-                Text(text = "${producto.nombre} - S/ ${producto.precio} x ${producto.cantidad}")
+                TarjetaProducto(
+                    producto = producto,
+                    onEliminar = { productos.remove(producto) }
+                )
             }
         }
+    }
+}
 
+@Composable
+fun TarjetaProducto(producto: Producto, onEliminar: () -> Unit) {
+    val importe = producto.precio * producto.cantidad
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = producto.nombre,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "S/ ${String.format(Locale.US, "%.2f", producto.precio)} x ${producto.cantidad}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            }
+
+            Text(
+                text = "S/ ${String.format(Locale.US, "%.2f", importe)}",
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+
+            IconButton(onClick = onEliminar) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Eliminar",
+                    tint = MaterialTheme.colorScheme.error
+                )
+            }
+        }
     }
 }
