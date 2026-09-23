@@ -1,6 +1,5 @@
 package com.chavez.clinicasalud.screens
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -30,12 +29,12 @@ fun HomeScreen(
     onMedicoClick: (Int) -> Unit,
     onOpenDrawer: () -> Unit
 ) {
-    // Estado para filtrar por especialidad seleccionada
+    // Estado para filtrar por especialidad
     var especialidadSeleccionada by remember { mutableStateOf("Cardiología") }
 
-    // Filtrado de médicos según la especialidad
-    val medicosFiltrados = remember(especialidadSeleccionada) {
-        DatosPrueba.medicos.filter { it.especialidad == especialidadSeleccionada }
+    val medicosAMostrar = remember(especialidadSeleccionada) {
+        // Muestra todos los médicos de la lista
+        DatosPrueba.medicos
     }
 
     Scaffold(
@@ -51,7 +50,7 @@ fun HomeScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Hola, Juan",
+                            text = "Hola, Karla",
                             color = Color.White.copy(alpha = 0.8f),
                             fontSize = 14.sp
                         )
@@ -111,7 +110,7 @@ fun HomeScreen(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(medicosFiltrados) { medico ->
+                items(medicosAMostrar) { medico ->
                     TarjetaMedico(
                         medico = medico,
                         onClick = { onMedicoClick(medico.id) }

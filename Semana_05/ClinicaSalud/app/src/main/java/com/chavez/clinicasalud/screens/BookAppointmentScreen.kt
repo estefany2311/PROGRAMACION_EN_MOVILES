@@ -54,6 +54,7 @@ fun BookAppointmentScreen(
             ) {
                 Button(
                     onClick = {
+                        DatosPrueba.agregarCita(medicoId, fechaSeleccionada, horaSeleccionada)
                         onConfirmarClick(medicoId, fechaSeleccionada, horaSeleccionada)
                     },
                     modifier = Modifier

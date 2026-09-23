@@ -1,5 +1,7 @@
 package com.chavez.clinicasalud.data
 
+import androidx.compose.runtime.mutableStateListOf
+
 // Modelo de datos para los médicos
 data class Medico(
     val id: Int,
@@ -55,11 +57,28 @@ object DatosPrueba {
         )
     )
 
-    val citasIniciales = listOf(
+    // Lista mutable reactiva para actualizar la vista automáticamente en Compose
+    val citasIniciales = mutableStateListOf(
         Cita(1, "Dra. Ana Torres", "Cardiología", "Viernes 27, 10:30 am", "10:30 am", "Confirmada"),
         Cita(2, "Dr. Luis Vega", "Pediatría", "Miércoles 15, 3:00 pm", "3:00 pm", "Completada")
     )
 
     val fechasDisponibles = listOf("Jue 26", "Vie 27", "Sáb 28")
     val horasDisponibles = listOf("9:00", "10:30", "3:00")
+
+    // Función para guardar dinámicamente la cita creada por el usuario
+    fun agregarCita(medicoId: Int, fecha: String, hora: String) {
+        val medico = medicos.find { it.id == medicoId } ?: medicos[0]
+        citasIniciales.add(
+            0, // Se inserta al principio para que aparezca primero
+            Cita(
+                id = citasIniciales.size + 1,
+                medicoNombre = medico.nombre,
+                especialidad = medico.especialidad,
+                fecha = "$fecha, $hora",
+                hora = hora,
+                estado = "Confirmada"
+            )
+        )
+    }
 }
