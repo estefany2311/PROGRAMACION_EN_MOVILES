@@ -53,7 +53,7 @@ fun HomeScreen(
                             color = Color.White
                         )
                         Text(
-                            text = "Hola, Juan",
+                            text = "Hola, karla",
                             fontSize = 13.sp,
                             color = Color.White.copy(alpha = 0.8f)
                         )
