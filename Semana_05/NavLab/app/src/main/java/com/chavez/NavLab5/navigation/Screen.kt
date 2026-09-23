@@ -1,25 +1,21 @@
 package com.chavez.NavLab5.navigation
 
-
-// Clase sellada que actúa como contrato central de navegación.
-// Recibe "route" como parámetro, que es el identificador único de cada pantalla.
-// Al ser sealed, el compilador conoce todas las rutas posibles en tiempo de compilación.
+// Clase sellada que actúa como contrato central de navegación para el Portal Académico.
 sealed class Screen(val route: String) {
-
-    // Pantalla de inicio - punto de entrada de la app
+    // Pantalla de Inicio de Sesión
+    object Login : Screen(route = "login")
+    
+    // Pantalla del Menú Principal
     object Home : Screen(route = "home")
-
-    // Pantalla que muestra la lista de elementos
-    object List : Screen(route = "list")
-
-    // Pantalla del perfil del usuario
+    
+    // Directorio de Alumnos (reemplaza a List)
+    object Directory : Screen(route = "directory")
+    
+    // Pantalla del Perfil del Alumno / Usuario
     object Profile : Screen(route = "profile")
-
-    // RUTA CON ARGUMENTO: {itemId} es el placeholder que Navigation reemplaza
-    // con el valor real al momento de navegar
-    object Detail : Screen(route = "detail/{itemId}") {
-        // Construye la ruta final sustituyendo el placeholder por el valor real.
-        // Ejemplo: createRoute(5) devuelve "detail/5"
-        fun createRoute(itemId: Int): String = "detail/$itemId"
+    
+    // Expediente del Alumno con parámetro {studentId}
+    object Detail : Screen(route = "detail/{studentId}") {
+        fun createRoute(studentId: Int): String = "detail/$studentId"
     }
 }
