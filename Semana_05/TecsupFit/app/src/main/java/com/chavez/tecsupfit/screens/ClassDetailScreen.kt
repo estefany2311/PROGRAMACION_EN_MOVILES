@@ -104,7 +104,10 @@
 
                 // Botón de acción principal
                 Button(
-                    onClick = { onReservarClick(clase.id) },
+                    onClick = {
+                        DatosPruebaFit.agregarReserva(clase.id) // redirecciona la resrva a mis reservas
+                        onReservarClick(clase.id)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),

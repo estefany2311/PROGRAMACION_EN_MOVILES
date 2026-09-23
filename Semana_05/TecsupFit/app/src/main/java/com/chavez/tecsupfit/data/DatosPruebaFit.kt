@@ -1,5 +1,7 @@
 package com.chavez.tecsupfit.data
 
+import androidx.compose.runtime.mutableStateListOf
+
 data class ClaseGym(
     val id: Int,
     val nombre: String,
@@ -42,7 +44,8 @@ object DatosPruebaFit {
         )
     )
 
-    val misReservas = listOf(
+    // Usamos mutableStateListOf para que Jetpack Compose detecte los cambios en vivo
+    val misReservas = mutableStateListOf(
         ClaseGym(
             id = 2,
             nombre = "Cross Training",
@@ -64,4 +67,18 @@ object DatosPruebaFit {
             estadoReserva = "Completada"
         )
     )
+
+    // Función para agregar la reserva seleccionada
+    fun agregarReserva(claseId: Int) {
+        val clase = clasesDisponibles.find { it.id == claseId }
+        if (clase != null && misReservas.none { it.id == clase.id && it.estadoReserva == "Confirmada" }) {
+            misReservas.add(
+                0, // Agrega al inicio de la lista
+                clase.copy(
+                    hora = "Hoy, ${clase.hora}",
+                    estadoReserva = "Confirmada"
+                )
+            )
+        }
+    }
 }
