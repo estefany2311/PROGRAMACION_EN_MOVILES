@@ -21,4 +21,7 @@ sealed class Screen(val route: String) {
 
     // Ruta para la pantalla Mis Citas del menú lateral
     object MyAppointments : Screen("my_appointments")
+
+    // Ruta para la pantalla Perfil
+    object Profile : Screen("profile")
 }

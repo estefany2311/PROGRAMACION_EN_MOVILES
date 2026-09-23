@@ -87,5 +87,10 @@ fun AppNavigation(
         composable(Screen.MyAppointments.route) {
             MyAppointmentsScreen(onOpenDrawer = onOpenDrawer)
         }
+
+        // Pantalla 6: Perfil
+        composable(Screen.Profile.route) {
+            ProfileScreen(onOpenDrawer = onOpenDrawer)
+        }
     }
 }

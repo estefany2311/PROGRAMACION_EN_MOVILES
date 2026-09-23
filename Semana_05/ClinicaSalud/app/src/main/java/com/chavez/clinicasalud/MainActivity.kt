@@ -114,6 +114,7 @@ class MainActivity : ComponentActivity() {
                                 selected = false,
                                 onClick = {
                                     scope.launch { drawerState.close() }
+                                    navController.navigate(Screen.Profile.route)
                                 }
                             )
                         }
