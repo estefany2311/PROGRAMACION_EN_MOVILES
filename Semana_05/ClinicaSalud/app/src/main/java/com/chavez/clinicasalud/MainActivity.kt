@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ListAlt
@@ -40,7 +39,7 @@ class MainActivity : ComponentActivity() {
                     drawerState = drawerState,
                     drawerContent = {
                         ModalDrawerSheet {
-                            // Header del menú lateral (Avatar JP + Nombre + Rol)
+                            // Header del menú lateral (Avatar KC + Nombre + Rol)
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -79,7 +78,7 @@ class MainActivity : ComponentActivity() {
                             HorizontalDivider()
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            // Opciones del menú
+                            // Opciones del menú limpias y funcionales
                             NavigationDrawerItem(
                                 icon = { Icon(Icons.Default.Home, contentDescription = null) },
                                 label = { Text("Inicio") },
@@ -94,7 +93,7 @@ class MainActivity : ComponentActivity() {
                             NavigationDrawerItem(
                                 icon = { Icon(Icons.Default.DateRange, contentDescription = null) },
                                 label = { Text("Mis citas") },
-                                selected = true, // Seleccionado según la captura
+                                selected = false,
                                 onClick = {
                                     scope.launch { drawerState.close() }
                                     navController.navigate(Screen.MyAppointments.route)
@@ -106,6 +105,7 @@ class MainActivity : ComponentActivity() {
                                 selected = false,
                                 onClick = {
                                     scope.launch { drawerState.close() }
+                                    navController.navigate(Screen.MedicalHistory.route)
                                 }
                             )
                             NavigationDrawerItem(

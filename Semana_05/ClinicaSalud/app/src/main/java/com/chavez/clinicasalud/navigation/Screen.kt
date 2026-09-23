@@ -1,4 +1,5 @@
 package com.chavez.clinicasalud.navigation
+
 // Rutas centrales de la aplicación
 sealed class Screen(val route: String) {
     object Home : Screen("home")
@@ -24,4 +25,7 @@ sealed class Screen(val route: String) {
 
     // Ruta para la pantalla Perfil
     object Profile : Screen("profile")
+
+    // Ruta para la pantalla Historial médico
+    object MedicalHistory : Screen("medical_history")
 }

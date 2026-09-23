@@ -92,5 +92,10 @@ fun AppNavigation(
         composable(Screen.Profile.route) {
             ProfileScreen(onOpenDrawer = onOpenDrawer)
         }
+
+        // Pantalla 7: Historial Médico
+        composable(Screen.MedicalHistory.route) {
+            MedicalHistoryScreen(onOpenDrawer = onOpenDrawer)
+        }
     }
 }
