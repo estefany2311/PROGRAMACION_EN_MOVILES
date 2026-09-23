@@ -20,7 +20,7 @@ fun HomeScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Bienvenido a la App",
+            text = "Pantalla Tecsup",
             style = MaterialTheme.typography.headlineMedium
         )
 
