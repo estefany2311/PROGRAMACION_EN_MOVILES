@@ -75,11 +75,6 @@ fun AppNavigation(
                 medicoId = medicoId,
                 fecha = fecha,
                 hora = hora,
-                onVolverInicioClick = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Home.route) { inclusive = true }
-                    }
-                },
                 onVerMisCitasClick = {
                     navController.navigate(Screen.MyAppointments.route) {
                         popUpTo(Screen.Home.route) { inclusive = false }

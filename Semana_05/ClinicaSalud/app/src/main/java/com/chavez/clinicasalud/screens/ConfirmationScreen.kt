@@ -22,10 +22,8 @@ fun ConfirmationScreen(
     medicoId: Int,
     fecha: String,
     hora: String,
-    onVolverInicioClick: () -> Unit,
     onVerMisCitasClick: () -> Unit
 ) {
-    // Buscar el médico correspondiente
     val medico = DatosPrueba.medicos.find { it.id == medicoId } ?: DatosPrueba.medicos[0]
 
     Column(
@@ -35,7 +33,7 @@ fun ConfirmationScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Ícono de check dentro de un círculo verde
+        // Ícono verde ✓
         Box(
             modifier = Modifier
                 .size(72.dp)
@@ -52,7 +50,7 @@ fun ConfirmationScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Título principal
+        // Título "¡Cita agendada!"
         Text(
             text = "¡Cita agendada!",
             fontSize = 22.sp,
@@ -62,7 +60,7 @@ fun ConfirmationScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Nombre del doctor
+        // Nombre del médico
         Text(
             text = medico.nombre,
             fontSize = 15.sp,
@@ -70,7 +68,7 @@ fun ConfirmationScreen(
             color = Color.Gray
         )
 
-        // Fecha y hora
+        // Fecha y hora elegida
         Text(
             text = "$fecha, $hora",
             fontSize = 14.sp,
@@ -78,35 +76,24 @@ fun ConfirmationScreen(
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(36.dp))
 
-        // Botón morado principal para ir al inicio
+
         Button(
-            onClick = onVolverInicioClick,
+            onClick = onVerMisCitasClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
             shape = RoundedCornerShape(10.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A247B))
-        ) {
-            Text(
-                text = "Ir al inicio",
-                fontSize = 16.sp,
-                color = Color.White
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFE0E0E0),
+                contentColor = Color.DarkGray
             )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Enlace / Texto secundario para ver mis citas
-        TextButton(
-            onClick = onVerMisCitasClick
         ) {
             Text(
                 text = "Ver mis citas",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF4A247B)
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
             )
         }
     }

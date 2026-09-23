@@ -1,6 +1,5 @@
 package com.chavez.clinicasalud.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,30 +28,34 @@ fun HomeScreen(
     onMedicoClick: (Int) -> Unit,
     onOpenDrawer: () -> Unit
 ) {
-    // Estado para filtrar por especialidad
-    var especialidadSeleccionada by remember { mutableStateOf("Cardiología") }
+    var especialidadSeleccionada by remember { mutableStateOf<String?>(null) }
 
-    val medicosAMostrar = remember(especialidadSeleccionada) {
-        // Muestra todos los médicos de la lista
+    val especialidades = listOf("Cardiología", "Pediatría", "Dermatología")
+
+    // Filtrado dinámico de médicos
+    val medicosFiltrados = if (especialidadSeleccionada == null) {
         DatosPrueba.medicos
+    } else {
+        DatosPrueba.medicos.filter {
+            it.especialidad.equals(especialidadSeleccionada, ignoreCase = true)
+        }
     }
 
     Scaffold(
         topBar = {
-            // Barra superior morada
             TopAppBar(
                 title = {
                     Column {
                         Text(
                             text = "Clínica Salud+",
-                            color = Color.White,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
                         Text(
-                            text = "Hola, Karla",
-                            color = Color.White.copy(alpha = 0.8f),
-                            fontSize = 14.sp
+                            text = "Hola, Juan",
+                            fontSize = 13.sp,
+                            color = Color.White.copy(alpha = 0.8f)
                         )
                     }
                 },
@@ -66,31 +69,34 @@ fun HomeScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF4A247B) // Morado principal
+                    containerColor = Color(0xFF4A148C)
                 )
             )
         }
-    ) { innerPadding ->
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp)
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
         ) {
-            // Filtros horizontales (LazyRow)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Chips de especialidades (LazyRow)
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(bottom = 20.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(DatosPrueba.especialidades) { especialidad ->
-                    val esSeleccionado = especialidad == especialidadSeleccionada
+                items(especialidades) { especialidad ->
+                    val isSelected = especialidadSeleccionada == especialidad
                     FilterChip(
-                        selected = esSeleccionado,
-                        onClick = { especialidadSeleccionada = especialidad },
-                        label = { Text(especialidad) },
-                        shape = RoundedCornerShape(20.dp),
+                        selected = isSelected,
+                        onClick = {
+                            // Si se vuelve a tocar el mismo, se deselecciona y muestra todos
+                            especialidadSeleccionada = if (isSelected) null else especialidad
+                        },
+                        label = { Text(text = especialidad) },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFF4A247B),
+                            selectedContainerColor = Color(0xFF4A148C),
                             selectedLabelColor = Color.White,
                             containerColor = Color(0xFFF0F0F0),
                             labelColor = Color.DarkGray
@@ -99,19 +105,23 @@ fun HomeScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(20.dp))
+
             Text(
                 text = "Médicos disponibles",
-                fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
-                modifier = Modifier.padding(bottom = 12.dp)
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
             )
 
-            // Lista vertical de médicos (LazyColumn)
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Lista filtrada (LazyColumn)
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(medicosAMostrar) { medico ->
-                    TarjetaMedico(
+                items(medicosFiltrados) { medico ->
+                    MedicoItemCard(
                         medico = medico,
                         onClick = { onMedicoClick(medico.id) }
                     )
@@ -121,9 +131,8 @@ fun HomeScreen(
     }
 }
 
-// Componente para la tarjeta de cada médico
 @Composable
-fun TarjetaMedico(
+fun MedicoItemCard(
     medico: Medico,
     onClick: () -> Unit
 ) {
@@ -131,8 +140,8 @@ fun TarjetaMedico(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F5F9)),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F9FA))
     ) {
         Row(
             modifier = Modifier
@@ -140,42 +149,41 @@ fun TarjetaMedico(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Ícono/Avatar del médico
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .background(Color(0xFFE8DDFF), CircleShape),
-                contentAlignment = Alignment.Center
+            Surface(
+                modifier = Modifier.size(48.dp),
+                shape = CircleShape,
+                color = Color(0xFFEDE7F6)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    tint = Color(0xFF4A247B)
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        tint = Color(0xFF4A148C)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Información (Nombre y Especialidad)
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = medico.nombre,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp
+                    fontSize = 15.sp,
+                    color = Color.Black
                 )
                 Text(
                     text = medico.especialidad,
-                    color = Color.Gray,
-                    fontSize = 13.sp
+                    fontSize = 13.sp,
+                    color = Color.Gray
                 )
             }
 
-            // Calificación
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Star,
                     contentDescription = "Calificación",
-                    tint = Color(0xFFFFC107),
+                    tint = Color(0xFFFFB300),
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
