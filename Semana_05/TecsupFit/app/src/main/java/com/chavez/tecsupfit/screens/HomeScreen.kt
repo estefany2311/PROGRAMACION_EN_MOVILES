@@ -47,7 +47,7 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Hola, Diego",
+                    text = "Hola, Karla",
                     color = Color.White.copy(alpha = 0.8f),
                     fontSize = 14.sp
                 )
