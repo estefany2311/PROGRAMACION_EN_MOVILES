@@ -6,6 +6,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.chavez.clinicasalud.screens.BookAppointmentScreen
 
 // Contenedor principal del flujo de pantallas
 @Composable
@@ -31,8 +32,15 @@ fun AppNavigation(navController: NavHostController) {
         composable(
             route = Screen.BookAppointment.route,
             arguments = listOf(navArgument("medicoId") { type = NavType.IntType })
-        ) {
-            // Se conectará con BookAppointmentScreen
+        ) { backStackEntry ->
+            val medicoId = backStackEntry.arguments?.getInt("medicoId") ?: 0
+            BookAppointmentScreen(
+                medicoId = medicoId,
+                onBackClick = { navController.popBackStack() },
+                onConfirmarClick = { id, fecha, hora ->
+                    navController.navigate(Screen.Confirmation.createRoute(id, fecha, hora))
+                }
+            )
         }
 
         // Pantalla 4: Confirmación de Cita
