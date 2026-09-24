@@ -1,58 +1,146 @@
-# Clínica Salud+ - Aplicación Móvil (Fase 1)
+# Clínica Salud+ — Fase 2
 
-##  Descripción del Proyecto
-**Clínica Salud+** es una aplicación móvil desarrollada en Android utilizando **Jetpack Compose** y **Material Design 3**. La aplicación permite a los pacientes explorar la lista de médicos disponibles, filtrar por especialidades, ver detalles del perfil médico, agendar citas seleccionando fecha y hora, y consultar su historial con estados diferenciados.
-
-El proyecto está construido bajo el paquete `com.chavez.clinicasalud` con una estructura modular, limpia.
-
----
-
-##  Información del Estudiante y Curso
-* **Curso:** Desarrollo de Aplicaciones Móviles
-* **Alumno:** Karla Chavez Lazo
+**Estudiante:** Karla Chavez Lazo
+**Curso:** Programación en Móviles
+**Proyecto:** Clínica Salud+
+**Rama:** `CON-IA`
 
 ---
 
-##  Estructura del Proyecto
+## Descripción
 
-* **com.chavez.clinicasalud**
-  * **data/**
-    * `Models.kt`: Modelos de datos (Medico, Cita) y fuente DatosPrueba.
-  * **navigation/**
-    * `AppNavigation.kt`: NavHost y declaración de rutas del flujo.
-    * `Screen.kt`: Definición de pantallas y rutas parametrizadas.
-  * **screens/**
-    * `HomeScreen.kt`: Pantalla principal con filtros y lista de médicos.
-    * `DoctorDetailScreen.kt`: Detalle y biografía del médico.
-    * `BookAppointmentScreen.kt`: Selección única de fecha y hora para la cita.
-    * `ConfirmationScreen.kt`: Confirmación de reserva y acceso a citas.
-    * `MyAppointmentsScreen.kt`: Lista de citas con chips de estado.
-  * **ui/theme/**: Colores, tipografía y tema visual M3.
-  * `MainActivity.kt`: Punto de entrada y contenedor del ModalNavigationDrawer.
+Clínica Salud+ es una aplicación móvil desarrollada con **Kotlin**, **Jetpack Compose** y **Material Design 3**.
+
+En esta segunda fase se implementaron nuevos requerimientos funcionales relacionados con la gestión de citas, el perfil del usuario y el historial médico.
+
+Las funcionalidades fueron desarrolladas sobre el proyecto existente, manteniendo la estructura y navegación de la aplicación.
 
 ---
 
-##  Requerimientos Funcionales (RF)
+#Requerimientos Funcionales — Fase 2
 
-| ID | Requerimiento | Archivo / Componente | Descripción Directa |
-| :--- | :--- | :--- | :--- |
-| **RF1** | Filtrar médicos | `screens/HomeScreen.kt` | Presionar un chip de especialidad filtra la lista en pantalla. |
-| **RF2** | Listar médicos | `screens/HomeScreen.kt` | Muestra TopBar morada  y lista de médicos con avatar y calificación . |
-| **RF3** | Ver perfil | `screens/DoctorDetailScreen.kt` | Muestra datos del médico (biografía, experiencia) y el botón "Agendar cita". |
-| **RF4** | Agendar cita | `screens/BookAppointmentScreen.kt` | Permite seleccionar solo una fecha y una hora en chips morados. |
-| **RF5** | Confirmar cita | `screens/ConfirmationScreen.kt` | Muestra el check verde ✓ con la confirmación de la fecha, hora y médico. |
-| **RF6** | Menú lateral (Drawer) | `navigation/AppNavigation.kt`<br>`MainActivity.kt` | Despliega el menú con la cabecera y accesos a la app. |
-| **RF7** | Listar mis citas | `screens/MyAppointmentsScreen.kt` | Muestra las citas con chip verde ("Confirmada") o gris ("Completada"). |
-| **RF8** | Ir a citas desde confirmación | `screens/ConfirmationScreen.kt` | El botón gris "Ver mis citas" lleva a la lista de citas agendadas. |
+| ID       | Requerimiento                 | Descripción                                                                                   |
+| -------- | ----------------------------- | --------------------------------------------------------------------------------------------- |
+| **RF09** | Cancelación de Citas          | Permite cancelar una cita desde la sección "Mis Citas" mediante un cuadro de confirmación.    |
+| **RF10** | Perfil de Usuario y Edición   | Permite visualizar los datos del paciente y modificar el número de teléfono.                  |
+| **RF11** | Historial Médico y Navegación | Permite consultar información médica y visualizar consultas anteriores desde el menú lateral. |
+
 
 ---
 
-##  Capturas de Pantalla
+#  Capturas de Pantalla
 
-| Menú Lateral (Drawer) | Inicio (HomeScreen) | Perfil del Médico |
-| :---: | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/327fbc35-7c1e-4ca7-90bc-e608f51145b2" width="220" /> | <img src="https://github.com/user-attachments/assets/c563ca1b-f2ff-44b2-8d97-e792ecce5c0e" width="220" /> | <img src="https://github.com/user-attachments/assets/425854af-a5a3-43c9-a2e0-e819d3df599c" width="220" /> |
+## RF09, RF10 y RF11
 
-| Agendar Cita | Confirmación de Cita | Mis Citas |
-| :---: | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/a70e6d13-3295-418e-bdc8-6142b4b80eee" width="220" /> | <img src="https://github.com/user-attachments/assets/e88bf478-c02b-4618-86d3-ccb76276ba92" width="220" /> | <img src="https://github.com/user-attachments/assets/8130e25b-840d-4827-8778-a37bcf3cac9e" width="220" /> |
+|              **RF09 — Cancelación de Cita**             |             **RF10 — Perfil y Edición**             |               **RF11 — Historial Médico**              |
+| :-----------------------------------------------------: | :-------------------------------------------------: | :----------------------------------------------------: |
+| <img width="738" height="1600" alt="image" src="https://github.com/user-attachments/assets/7809725b-556b-44ba-b1b5-67d4282736cc" />| <img width="738" height="1600" alt="image" src="https://github.com/user-attachments/assets/8dd586ec-e096-40de-b6b6-a4d7ec263e3e" />| <img width="738" height="1600" alt="image" src="https://github.com/user-attachments/assets/67f30e95-ce97-43ea-b4ba-c5fda6f9dada" />|
+
+
+
+## Prompts utilizados
+
+Durante la implementación de la Fase 2 se utilizaron los siguientes prompts con Gemini AI:
+
+### RF09 — Cancelación de citas
+
+> Trabaja exclusivamente en este archivo (MyAppointmentsScreen.kt). Necesito agregar la funcionalidad de cancelar citas. Si el usuario presiona una cita con estado "Confirmada", muestra un AlertDialog de Material 3 con el título "¿Cancelar cita?" y los botones "Sí, cancelar" y "No". Al confirmar, cambia su estado a "Cancelada". Ajusta el diseño de la tarjeta (Card) agregando bordes redondeados (RoundedCornerShape(16.dp)) y un AssistChip en tono rojo suave para la cita cancelada.
+
+> RESTRICCIONES:
+>
+> * No crees nuevos archivos ni clases externas.
+> * Utiliza únicamente imports nativos de androidx.compose.material3 y androidx.compose.ui.
+> * Conserva las llamadas a DatosPrueba.citasIniciales y la estructura original del archivo sin modificar otros paquetes.
+> * No uses ViewModels, solo remember y mutableStateListOf.
+
+### RF10 — Perfil del paciente
+
+> Implementa el contenido de ProfileScreen.kt de forma limpia y ordenada dentro del paquete com.chavez.clinicasalud.screens. En la parte superior debe mostrar un avatar circular con las iniciales "KC", el nombre "Karla Chavez" y el rol "Paciente". Agrega tarjetas M3 (Card) estilizadas con bordes de 16.dp para la información personal (Correo, Teléfono, Tipo de Sangre) y un Switch para "Notificaciones de recordatorio". Incluye un botón "Editar Datos" que al presionar abra un diálogo sencillo para modificar el teléfono.
+
+> RESTRICCIONES:
+>
+> * Mantén todo el código encapsulado dentro de ProfileScreen.kt.
+> * No agregues librerías de terceros ni modifiques la navegación global.
+> * Usa remember y mutableStateOf para los estados locales.
+
+### RF11 — Historial médico
+
+> Diseña e implementa la interfaz de Historial Médico dentro de este archivo. En la parte superior incluye una tarjeta resumen de salud del paciente (Alergias: Ninguna, Tipo de Sangre: O+). Debajo, muestra una lista de consultas médicas pasadas usando tarjetas M3 con bordes redondeados. Cada registro debe incluir: Fecha de atención, Nombre del médico, Especialidad, Diagnóstico y Medicamento recetado.
+
+> RESTRICCIONES:
+>
+> * Genera datos de prueba simulados dentro del mismo archivo con remember { mutableStateListOf(...) }.
+> * No importes paquetes inexistentes ni crees arquitecturas complejas fuera de esta pantalla.
+> * Utiliza la paleta de colores M3 coherente con el resto del proyecto.
+
+
+#  Correcciones y problemas encontrados
+
+## 1. Conflicto durante Git Merge
+
+Durante la sincronización de la rama `CON-IA` se presentó un conflicto en el proceso de merge.
+
+Se solucionó cancelando el merge y posteriormente sincronizando nuevamente la rama con el repositorio remoto.
+
+Comando utilizado:
+
+```bash
+git merge --abort
+```
+
+---
+
+## 2. Problema de navegación del historial médico
+
+Al implementar el RF11 se presentó un problema debido a la duplicación de la opción del historial médico dentro del menú lateral.
+
+Se revisaron los siguientes archivos:
+
+```text
+MainActivity.kt
+Screen.kt
+AppNavigation.kt
+```
+
+Finalmente, se configuró correctamente la navegación hacia:
+
+```text
+Screen.MedicalHistory.route
+```
+
+utilizando el `NavController`.
+
+
+---
+
+# Estructura general del proyecto
+
+```text
+ClínicaSalud/
+│
+├── app/
+│   └── src/
+│       └── main/
+│           └── java/
+│               └── ...
+│                   ├── navigation/
+│                   ├── screens/
+│                   │   ├── MisCitasScreen.kt
+│                   │   ├── ProfileScreen.kt
+│                   │   └── MedicalHistoryScreen.kt
+│                   │
+│                   ├── MainActivity.kt
+│                   └── ...
+│
+├── docs/
+│   └── images/
+│       ├── rf9_cancelacion.png
+│       ├── rf10_perfil.png
+│       ├── rf11_historial.png
+│       └── rf11_historial_detalle.png
+│
+└── README.md
+```
+
+
+Las funcionalidades fueron desarrolladas manteniendo la estructura existente del proyecto y utilizando componentes de **Jetpack Compose** y **Material Design 3**.
