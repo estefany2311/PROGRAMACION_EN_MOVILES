@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -119,29 +120,29 @@ fun HomeScreen(
 
         // RF08: Buscador dinámico en tiempo real justo antes de la lista de clases
         OutlinedTextField(
-            value = searchQuery, // RF08: Valor enlazado al estado de búsqueda
-            onValueChange = { searchQuery = it }, // RF08: Actualiza el estado reactivo
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp), // RF08: Ajuste de márgenes laterales
-            placeholder = { Text("Buscar clase o disciplina...") }, // RF08: Placeholder indicado
+                .padding(horizontal = 16.dp),
+            placeholder = { Text("Buscar clase o disciplina...") },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Buscar"
-                ) // RF08: Ícono al inicio
+                )
             },
             trailingIcon = {
                 if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = { searchQuery = "" }) { // RF08: Acción para limpiar texto
+                    IconButton(onClick = { searchQuery = "" }) {
                         Icon(
                             imageVector = Icons.Default.Clear,
                             contentDescription = "Limpiar texto"
-                        ) // RF08: Ícono de limpiar al final
+                        )
                     }
                 }
             },
-            shape = RoundedCornerShape(16.dp), // RF08: Bordes redondeados de 16.dp
+            shape = RoundedCornerShape(16.dp),
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFF00695C),
@@ -161,7 +162,7 @@ fun HomeScreen(
             contentPadding = PaddingValues(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(clasesFiltradas) { clase -> // RF08: Muestra las clases filtradas por nombre o sala
+            items(clasesFiltradas) { clase ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -191,19 +192,68 @@ fun HomeScreen(
 
                         Spacer(modifier = Modifier.width(16.dp))
 
-                        Column {
-                            Text(
-                                text = clase.nombre,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                color = Color.Black
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "${clase.hora} · ${clase.sala}",
-                                fontSize = 12.sp,
-                                color = Color.Gray
-                            )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = clase.nombre,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = Color.Black
+                                )
+
+                                // RF09: Badge de Nivel de dificultad (Principiante / Intermedio / Avanzado)
+                                val (nivelBg, nivelTextColor) = when (clase.nivel) {
+                                    "Principiante" -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                                    "Avanzado" -> Color(0xFFFFEBEE) to Color(0xFFC62828)
+                                    else -> Color(0xFFFFF3E0) to Color(0xFFE65100)
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = nivelBg
+                                ) {
+                                    Text(
+                                        text = clase.nivel,
+                                        color = nivelTextColor,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "${clase.hora} · ${clase.sala}",
+                                    fontSize = 12.sp,
+                                    color = Color.Gray
+                                )
+
+                                Spacer(modifier = Modifier.width(10.dp))
+
+                                // RF09: Indicador de Calorías estimadas
+                                Icon(
+                                    imageVector = Icons.Default.LocalFireDepartment,
+                                    contentDescription = "Calorías",
+                                    tint = Color(0xFFFF7043),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(2.dp))
+                                Text(
+                                    text = clase.calorias,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color.DarkGray
+                                )
+                            }
                         }
                     }
                 }
