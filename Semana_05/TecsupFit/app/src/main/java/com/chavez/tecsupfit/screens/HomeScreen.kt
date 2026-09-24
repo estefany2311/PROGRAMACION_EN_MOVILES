@@ -8,8 +8,10 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,6 +29,21 @@ fun HomeScreen(
 ) {
     var selectedFilter by remember { mutableStateOf("Hoy") }
     val filtros = listOf("Hoy", "Esta semana")
+
+    // RF08: Estado reactivo para la búsqueda dinámicas de clases
+    var searchQuery by remember { mutableStateOf("") }
+
+    // RF08: Lista filtrada reactivamente evaluando nombre o sala de la clase
+    val clasesFiltradas = remember(searchQuery) {
+        if (searchQuery.isBlank()) {
+            DatosPruebaFit.clasesDisponibles
+        } else {
+            DatosPruebaFit.clasesDisponibles.filter { clase ->
+                clase.nombre.contains(searchQuery, ignoreCase = true) ||
+                        clase.sala.contains(searchQuery, ignoreCase = true)
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -98,9 +115,45 @@ fun HomeScreen(
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // RF08: Buscador dinámico en tiempo real justo antes de la lista de clases
+        OutlinedTextField(
+            value = searchQuery, // RF08: Valor enlazado al estado de búsqueda
+            onValueChange = { searchQuery = it }, // RF08: Actualiza el estado reactivo
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp), // RF08: Ajuste de márgenes laterales
+            placeholder = { Text("Buscar clase o disciplina...") }, // RF08: Placeholder indicado
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Buscar"
+                ) // RF08: Ícono al inicio
+            },
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = { searchQuery = "" }) { // RF08: Acción para limpiar texto
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Limpiar texto"
+                        ) // RF08: Ícono de limpiar al final
+                    }
+                }
+            },
+            shape = RoundedCornerShape(16.dp), // RF08: Bordes redondeados de 16.dp
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF00695C),
+                unfocusedBorderColor = Color(0xFFCCCCCC),
+                focusedContainerColor = Color(0xFFF9F9F9),
+                unfocusedContainerColor = Color(0xFFF9F9F9)
+            )
+        )
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Requisito: LazyColumn con lista de clases
+        // Requisito: LazyColumn con lista de clases filtradas dinámicamente
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -108,7 +161,7 @@ fun HomeScreen(
             contentPadding = PaddingValues(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(DatosPruebaFit.clasesDisponibles) { clase ->
+            items(clasesFiltradas) { clase -> // RF08: Muestra las clases filtradas por nombre o sala
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
