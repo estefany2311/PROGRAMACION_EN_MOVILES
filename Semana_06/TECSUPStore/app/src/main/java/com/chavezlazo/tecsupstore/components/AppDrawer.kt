@@ -2,11 +2,34 @@ package com.chavezlazo.tecsupstore.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+
+// Modelo para cada ítem de la lista
+data class DrawerItemData(
+    val ruta: String,
+    val titulo: String,
+    val icono: ImageVector
+)
+
+// NavigationDrawer con sus íconos
+val listaItemsDrawer = listOf(
+    DrawerItemData("inicio", "Inicio", Icons.Default.Home),
+    DrawerItemData("pedidos", "Mis pedidos", Icons.Default.ShoppingBag),
+    DrawerItemData("favoritos", "Favoritos", Icons.Default.Favorite),
+    DrawerItemData("perfil", "Perfil", Icons.Default.Person),
+    DrawerItemData("logout", "Cerrar sesión", Icons.Default.ExitToApp)
+)
 
 @Composable
 fun AppDrawerContent(
@@ -14,7 +37,7 @@ fun AppDrawerContent(
     onNavigate: (String) -> Unit
 ) {
     ModalDrawerSheet {
-        // 1. Encabezado de Usuario
+        // Encabezado de Usuario
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -52,12 +75,21 @@ fun AppDrawerContent(
         HorizontalDivider()
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 2. Estructura base de los items del Drawer
-        NavigationDrawerItem(
-            label = { Text("Inicio") },
-            selected = currentRoute == "inicio",
-            onClick = { onNavigate("inicio") },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
+        // Renderizado de los ítems con ícono
+        listaItemsDrawer.forEach { item ->
+            val isSelected = currentRoute == item.ruta
+            NavigationDrawerItem(
+                label = { Text(item.titulo) },
+                icon = {
+                    Icon(
+                        imageVector = item.icono,
+                        contentDescription = item.titulo
+                    )
+                },
+                selected = isSelected,
+                onClick = { onNavigate(item.ruta) },
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+            )
+        }
     }
 }
