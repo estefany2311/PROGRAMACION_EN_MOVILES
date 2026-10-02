@@ -45,6 +45,33 @@ fun TarjetaProducto(producto: Producto) {
                 }
 
                 // 2....
+                // DropdownMenu desplegable
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Favoritos") },
+                        onClick = {
+                            expanded = false
+                            // Acción para marcar como favorito
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Compartir") },
+                        onClick = {
+                            expanded = false
+                            // Acción para compartir
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Reportar") },
+                        onClick = {
+                            expanded = false
+                            // Acción para reportar
+                        }
+                    )
+                }
             }
         }
     }
