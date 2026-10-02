@@ -1,5 +1,6 @@
 package com.chavezlazo.tecsupstore.screens
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -12,7 +13,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation() {
-    // Estado del Drawer (abierto o cerrado)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var currentRoute by remember { mutableStateOf("inicio") }
@@ -32,7 +32,19 @@ fun AppNavigation() {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("TECSUP Store") },
+                    title = {
+                        Column {
+                            Text(
+                                text = "TECSUP Store",
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                            Text(
+                                text = "Más vendidos",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                            )
+                        }
+                    },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(
@@ -40,15 +52,19 @@ fun AppNavigation() {
                                 contentDescription = "Abrir menú de navegación"
                             )
                         }
-                    }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 )
             }
         ) { innerPadding ->
-            // Contenido de la pantalla seleccionada
             Surface(modifier = Modifier.padding(innerPadding)) {
                 when (currentRoute) {
                     "inicio" -> HomeScreen()
-                    else -> HomeScreen() // HomeScreen
+                    else -> HomeScreen()
                 }
             }
         }
