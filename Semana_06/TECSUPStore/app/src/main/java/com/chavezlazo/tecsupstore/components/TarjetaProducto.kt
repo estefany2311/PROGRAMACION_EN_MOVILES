@@ -1,5 +1,9 @@
 package com.chavezlazo.tecsupstore.components
 
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -52,24 +56,39 @@ fun TarjetaProducto(producto: Producto) {
                 ) {
                     DropdownMenuItem(
                         text = { Text("Favoritos") },
-                        onClick = {
-                            expanded = false
-                            // Acción para marcar como favorito
-                        }
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.FavoriteBorder,
+                                contentDescription = null
+                            )
+                        },
+                        onClick = { expanded = false }
                     )
+
+                    HorizontalDivider() // Separador visual entre opciones
+
                     DropdownMenuItem(
                         text = { Text("Compartir") },
-                        onClick = {
-                            expanded = false
-                            // Acción para compartir
-                        }
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = null
+                            )
+                        },
+                        onClick = { expanded = false }
                     )
+
+                    HorizontalDivider()
+
                     DropdownMenuItem(
                         text = { Text("Reportar") },
-                        onClick = {
-                            expanded = false
-                            // Acción para reportar
-                        }
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = null
+                            )
+                        },
+                        onClick = { expanded = false }
                     )
                 }
             }
