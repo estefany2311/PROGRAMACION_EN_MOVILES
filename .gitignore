@@ -1,0 +1,17 @@
+# Android Studio / IntelliJ
+.idea/
+*.iml
+
+# Gradle y compilacion
+.gradle/
+build/
+local.properties
+captures/
+.cxx/
+.externalNativeBuild/
+*.apk
+*.aab
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
