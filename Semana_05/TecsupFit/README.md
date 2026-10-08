@@ -1,57 +1,141 @@
-# TecsupFit - Aplicación Móvil de Gimnasio(FASE 1)
+# TecsupFit - Aplicación Móvil de Gimnasio
 
-## Descripción del Proyecto
-
-**TecsupFit** es una aplicación móvil desarrollada en Android utilizando **Jetpack Compose** y **Material Design 3**. La aplicación permite a los usuarios explorar las clases de gimnasio disponibles, filtrar por días, consultar detalles y cupos de cada disciplina, reservar un cupo y revisar el historial de sus reservas y su perfil.
-
-El proyecto está construido bajo el paquete `com.chavez.tecsupfit` con una estructura modular y limpia.
-
----
-
-## Información del Estudiante y Curso
-
-* **Curso:** Desarrollo de Aplicaciones Móviles
-* Alumno: Karla Chavez Lazo 
+**Estudiante:** Karla Chavez Lazo
+**Curso:** Programación en Móviles
+**Proyecto:** TecsupFit
+**Rama:** `CON-IA`
 
 ---
 
-## Estructura del Proyecto
+## Descripción General
 
-* **com.chavez.tecsupfit**
-  * `data/`
-    * `DatosPruebaFit.kt` : Modelos de datos (`ClaseGym`) y lista de datos simulados.
-  * `navigation/`
-    * `AppNavigation.kt` : NavHost, barra de navegación inferior (`NavigationBar`) y gestión de rutas.
-    * `Screen.kt` : Definición de pantallas y rutas parametrizadas.
-  * `screens/`
-    * `HomeScreen.kt` : Pantalla principal con filtros (`LazyRow`) y lista de clases (`LazyColumn`).
-    * `ClassDetailScreen.kt` : Detalle de la clase, información de cupos y botón para reservar.
-    * `ConfirmationScreen.kt` : Confirmación de la reserva realizada.
-    * `ReservationsScreen.kt` : Historial de reservas con estados (Confirmada / Completada).
-    * `RoutinesScreen.kt` : Sección de rutinas asignadas.
-    * `ProfileScreen.kt` : Perfil del usuario con avatar, plan actual y estadísticas.
-  * `ui/theme/` : Configuración de colores, tipografía y tema visual M3.
-  * `MainActivity.kt` : Punto de entrada y contenedor principal de la aplicación.
+TecsupFit es una aplicación móvil para Android desarrollada con Kotlin y Jetpack Compose, orientada a la consulta y reserva de clases de gimnasio.
+
+La aplicación utiliza Material Design 3 y una estructura basada en Scaffold, permitiendo organizar la interfaz principal y la navegación inferior mediante una BottomBar. Esto facilita el acceso a las secciones principales de Inicio, Reservas, Rutinas y Perfil, manteniendo una navegación organizada entre las diferentes pantallas.
+En la rama `CON-IA` se agregaron tres nuevos requerimientos funcionales utilizando **Gemini AI** como apoyo para el desarrollo, manteniendo la estructura y funcionalidades existentes.
 
 ---
-## Requerimientos Funcionales (RF)
 
-| ID | Requerimiento | Archivo / Componente | Descripción Directa |
-| :---: | :--- | :--- | :--- |
-| **RF01** | Mostrar lista de clases y filtros | `HomeScreen.kt` | Muestra los botones de filtro ("Hoy", "Esta semana") en una lista horizontal y la lista de clases de gimnasio en una columna desplegable. |
-| **RF02** | Ver detalle de una clase | `ClassDetailScreen.kt` | Muestra la información de la clase seleccionada (nombre, horario, sala, descripción y cupos disponibles) con un botón para reservar. |
-| **RF03** | Confirmar la reserva | `ConfirmationScreen.kt` | Muestra un mensaje de confirmación con el check verde y el resumen de la clase reservada. |
-| **RF04** | Listar mis reservas | `ReservationsScreen.kt` | Muestra la lista de clases reservadas indicando si están "Confirmadas" o "Completadas". |
-| **RF05** | Visualizar perfil de usuario | `ProfileScreen.kt` | Muestra el nombre del usuario, su tipo de plan y el contador de clases y rachas. |
-| **RF06** | Navegación entre pantallas | `AppNavigation.kt` | Permite cambiar entre las pantallas del menú inferior (Inicio, Reservas, Rutinas y Perfil) y navegar al detalle de las clases. |
+## Tecnologías
 
-## Capturas de Pantalla
+* Kotlin
+* Jetpack Compose
+* Material Design 3
+* Android Studio
+* Navigation Compose
+* Gemini AI
+* Git / GitHub
 
-| Inicio (HomeScreen) | Detalle de Clase | Confirmación de Reserva |
-| :---: | :---: | :---: |
-| <img width="738" height="1600" alt="image" src="https://github.com/user-attachments/assets/fd45d926-e22b-416f-a6d1-06461aec439d" />|<img width="738" height="1600" alt="image" src="https://github.com/user-attachments/assets/5e0a6185-5d5a-41bc-8315-1b64d2ae0141" />| <img width="738" height="1600" alt="image" src="https://github.com/user-attachments/assets/33743cb0-f53a-40c1-a91f-d841625a234e" />
-|
+---
 
-| Mis Reservas | Mis Rutinas | Mi Perfil |
-| :---: | :---: | :---: |
-| <img width="738" height="1600" alt="image" src="https://github.com/user-attachments/assets/b2f2a961-1463-4f98-aeb1-f1ab7e37d824" />| <img width="738" height="1600" alt="image" src="https://github.com/user-attachments/assets/8e586b5e-b9ca-44a2-9b5e-9985f72684f5" />| <img width="738" height="1600" alt="image" src="https://github.com/user-attachments/assets/ece14e22-4cc3-4de5-89a7-e3c1c2f746b8" />
+# Requerimientos Funcionales (RF)
+
+## Proyecto Base — RF01 al RF06
+
+| ID       | Requerimiento                     | Archivo / Componente    | Descripción                                                                                     |
+| -------- | --------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------- |
+| **RF01** | Mostrar lista de clases y filtros | `HomeScreen.kt`         | Muestra filtros como "Hoy" y "Esta semana", junto con la lista de clases disponibles.           |
+| **RF02** | Ver detalle de una clase          | `ClassDetailScreen.kt`  | Muestra nombre, horario, sala, descripción y cupos disponibles, además del botón para reservar. |
+| **RF03** | Confirmar la reserva              | `ConfirmationScreen.kt` | Muestra la confirmación de la reserva y el resumen de la clase seleccionada.                    |
+| **RF04** | Listar mis reservas               | `ReservationsScreen.kt` | Muestra las clases reservadas y su estado, como "Confirmadas" o "Completadas".                  |
+| **RF05** | Visualizar perfil de usuario      | `ProfileScreen.kt`      | Muestra información del usuario, tipo de plan, clases realizadas y rachas.                      |
+| **RF06** | Navegación entre pantallas        | `AppNavigation.kt`      | Permite navegar entre Inicio, Reservas, Rutinas, Perfil y el detalle de las clases.             |
+
+---
+
+## Requerimientos Agregados — Rama CON-IA
+
+| ID       | Requerimiento                     | Archivo / Componente                                | Descripción                                                                              |
+| -------- | --------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **RF07** | Banner "Tu Próxima Clase"         | `HomeScreen.kt`                                     | Agrega un banner superior con la próxima clase agendada, horario, sala e ícono de reloj. |
+| **RF08** | Buscador dinámico en tiempo real  | `HomeScreen.kt`                                     | Permite buscar clases por nombre o sala mientras el usuario escribe.                     |
+| **RF09** | Indicadores de nivel e intensidad | `ClaseGym`, `HomeScreen.kt`, `ClassDetailScreen.kt` | Agrega nivel de dificultad y calorías estimadas mediante chips e indicadores visuales.   |
+
+### Resumen de las mejoras
+
+| Proyecto Base           | Mejoras CON-IA               |
+| ----------------------- | ---------------------------- |
+| RF01 — Lista y filtros  | **RF07 — Próxima clase**     |
+| RF02 — Detalle de clase | **RF08 — Buscador dinámico** |
+| RF03 — Confirmación     | **RF09 — Nivel y calorías**  |
+| RF04 — Mis reservas     |                              |
+| RF05 — Perfil           |                              |
+| RF06 — Navegación       |                              |
+
+---
+
+# Prompts Utilizados con Gemini AI
+
+Se utilizaron **3 prompts**, uno por cada nuevo requerimiento funcional.
+
+### Prompt 1 — RF07
+
+> Actúa sobre el proyecto Android existente TecsupFit en la rama `CON-IA`. Implementa únicamente el RF07: Banner "Tu Próxima Clase" en `HomeScreen.kt`. Agrega un Card antes del filtro de listas con degradado de `#00695C` a `#004D40`, bordes redondeados, etiqueta "TU PRÓXIMA CLASE", nombre "Cross Training", horario "Hoy, 6:00 pm · Sala 1" e ícono `Icons.Default.Schedule`. Mantén las funcionalidades existentes y no realices cambios fuera de este requerimiento.
+
+### Prompt 2 — RF08
+
+> Actúa sobre el proyecto Android existente TecsupFit en la rama `CON-IA`. Implementa únicamente el RF08: Buscador Dinámico en Tiempo Real en `HomeScreen.kt`. Agrega un `OutlinedTextField` con `Icons.Default.Search`, placeholder "Buscar clase o disciplina..." e ícono `Icons.Default.Clear`. Utiliza `var searchQuery by remember { mutableStateOf("") }` para filtrar `clasesDisponibles` por nombre o sala en tiempo real. Mantén las funcionalidades existentes y no realices cambios fuera de este requerimiento.
+
+### Prompt 3 — RF09
+
+> Actúa sobre el proyecto Android existente TecsupFit en la rama `CON-IA`. Implementa únicamente el RF09: Indicadores de Nivel e Intensidad. Agrega los campos `nivel` y `calorias` al modelo `ClaseGym`, actualiza los datos de prueba y muestra estos valores en las tarjetas de `HomeScreen.kt` y en `ClassDetailScreen.kt`. Utiliza indicadores de color para Principiante, Intermedio y Avanzado, además de un ícono para las calorías. Mantén RF07, RF08 y las funcionalidades existentes.
+
+---
+
+# Capturas de Pantalla
+
+## RF07, RF08 y RF09
+
+A continuación se muestran las evidencias de las funcionalidades agregadas en la rama `CON-IA`.
+
+|                                         **RF07 — Próxima Clase**                                        |                                           **RF08 — Buscador**                                           |                                       **RF09 — Nivel y Calorías**                                       |
+| :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: |
+| <img src="https://github.com/user-attachments/assets/7d5e73a1-bf7f-457c-bf99-3ac1f0deda93" width="250"> | <img src="https://github.com/user-attachments/assets/58a1ce19-962a-4642-9c8e-a72aef24d71a" width="250"> | <img src="https://github.com/user-attachments/assets/156b21f8-84ea-4348-b7dc-9b508f554297" width="250"> |
+
+### Detalle de Clase — RF09
+
+<img src="https://github.com/user-attachments/assets/85b55911-9804-4a65-9cb3-9cd9e443cd2d" width="350">
+
+**RF09:** La pantalla de detalle muestra el nivel de dificultad y las calorías estimadas de la clase.
+
+---
+
+# Commits de la Mejora CON-IA
+
+| Commit       | Requerimiento | Implementación                   |
+| ------------ | ------------- | -------------------------------- |
+| **Commit 1** | RF07          | Banner "Tu Próxima Clase"        |
+| **Commit 2** | RF08          | Buscador dinámico en tiempo real |
+| **Commit 3** | RF09          | Indicadores de nivel y calorías  |
+
+---
+
+# Estructura Principal
+
+```text
+TecsupFit/
+│
+├── app/
+│   └── src/main/java/com/chavez/tecsupfit/
+│       ├── data/
+│       │   └── DatosPruebaFit.kt
+│       │
+│       ├── navigation/
+│       │   ├── AppNavigation.kt
+│       │   └── Screen.kt
+│       │
+│       ├── screens/
+│       │   ├── HomeScreen.kt
+│       │   ├── ClassDetailScreen.kt
+│       │   ├── ConfirmationScreen.kt
+│       │   ├── ReservationsScreen.kt
+│       │   ├── ProfileScreen.kt
+│       │   └── RoutinesScreen.kt
+│       │
+│       └── MainActivity.kt
+│
+│
+└── README.md
+```
+
+---
