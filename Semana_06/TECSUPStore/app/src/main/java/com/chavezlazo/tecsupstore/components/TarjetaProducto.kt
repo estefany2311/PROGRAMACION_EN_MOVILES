@@ -1,8 +1,10 @@
 package com.chavezlazo.tecsupstore.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Share
@@ -14,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.chavezlazo.tecsupstore.model.Producto
-import androidx.compose.material.icons.filled.Favorite
 
 @Composable
 fun TarjetaProducto(
@@ -66,6 +67,16 @@ fun TarjetaProducto(
                     text = producto.precio,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // Corazón animado: aparece solo si el producto es favorito
+            AnimatedVisibility(visible = esFavorito) {
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = "Producto favorito",
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(20.dp)
                 )
             }
 

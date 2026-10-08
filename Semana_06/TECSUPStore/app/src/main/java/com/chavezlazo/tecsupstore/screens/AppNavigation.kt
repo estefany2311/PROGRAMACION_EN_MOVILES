@@ -16,14 +16,23 @@ fun AppNavigation() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var currentRoute by remember { mutableStateOf("inicio") }
+
+    // Estado elevado: ids de los productos marcados como favoritos
     val favoritos = remember { mutableStateListOf<Int>() }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Agrega o quita un favorito y muestra un mensaje
     val alternarFavorito: (Int) -> Unit = { id ->
-        if (id in favoritos) {
-            favoritos.remove(id)
-        } else {
-            favoritos.add(id)
+        val agregado = id !in favoritos
+        if (agregado) favoritos.add(id) else favoritos.remove(id)
+        scope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            snackbarHostState.showSnackbar(
+                if (agregado) "Agregado a favoritos" else "Quitado de favoritos"
+            )
         }
     }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -38,6 +47,7 @@ fun AppNavigation() {
         }
     ) {
         Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 TopAppBar(
                     title = {
@@ -71,8 +81,14 @@ fun AppNavigation() {
         ) { innerPadding ->
             Surface(modifier = Modifier.padding(innerPadding)) {
                 when (currentRoute) {
-                    "inicio" -> HomeScreen(favoritos = favoritos, onToggleFavorito = alternarFavorito)
-                    else -> HomeScreen(favoritos = favoritos, onToggleFavorito = alternarFavorito)
+                    "inicio" -> HomeScreen(
+                        favoritos = favoritos,
+                        onToggleFavorito = alternarFavorito
+                    )
+                    else -> HomeScreen(
+                        favoritos = favoritos,
+                        onToggleFavorito = alternarFavorito
+                    )
                 }
             }
         }
