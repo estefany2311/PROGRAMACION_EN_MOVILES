@@ -14,9 +14,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.chavezlazo.tecsupstore.model.Producto
+import androidx.compose.material.icons.filled.Favorite
 
 @Composable
-fun TarjetaProducto(producto: Producto) {
+fun TarjetaProducto(
+    producto: Producto,
+    esFavorito: Boolean = false,
+    onToggleFavorito: () -> Unit = {}
+) {
     var expanded by remember { mutableStateOf(false) }
 
     Card(
@@ -78,15 +83,18 @@ fun TarjetaProducto(producto: Producto) {
                     onDismissRequest = { expanded = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Favoritos") },
+                        text = { Text(if (esFavorito) "Quitar de favoritos" else "Favoritos") },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Default.FavoriteBorder,
+                                imageVector = if (esFavorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
                         },
-                        onClick = { expanded = false }
+                        onClick = {
+                            onToggleFavorito()
+                            expanded = false
+                        }
                     )
 
                     HorizontalDivider()
