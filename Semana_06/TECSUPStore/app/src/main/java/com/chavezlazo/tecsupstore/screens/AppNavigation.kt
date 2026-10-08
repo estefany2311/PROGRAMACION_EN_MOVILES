@@ -32,7 +32,8 @@ fun AppNavigation() {
                 onNavigate = { nuevaRuta ->
                     currentRoute = nuevaRuta
                     scope.launch { drawerState.close() }
-                }
+                },
+                cantidadFavoritos = favoritos.size
             )
         }
     ) {

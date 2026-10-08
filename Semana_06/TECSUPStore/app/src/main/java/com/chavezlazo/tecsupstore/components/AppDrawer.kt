@@ -34,7 +34,8 @@ val listaItemsDrawer = listOf(
 @Composable
 fun AppDrawerContent(
     currentRoute: String,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    cantidadFavoritos: Int = 0
 ) {
     ModalDrawerSheet {
         // Encabezado de Usuario
@@ -88,6 +89,11 @@ fun AppDrawerContent(
                 },
                 selected = isSelected,
                 onClick = { onNavigate(item.ruta) },
+                badge = {
+                    if (item.ruta == "favoritos" && cantidadFavoritos > 0) {
+                        Badge { Text(cantidadFavoritos.toString()) }
+                    }
+                },
                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
             )
         }
