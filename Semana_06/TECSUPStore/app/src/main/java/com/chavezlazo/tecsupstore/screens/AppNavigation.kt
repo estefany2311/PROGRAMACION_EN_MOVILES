@@ -16,7 +16,14 @@ fun AppNavigation() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var currentRoute by remember { mutableStateOf("inicio") }
-
+    val favoritos = remember { mutableStateListOf<Int>() }
+    val alternarFavorito: (Int) -> Unit = { id ->
+        if (id in favoritos) {
+            favoritos.remove(id)
+        } else {
+            favoritos.add(id)
+        }
+    }
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -63,8 +70,8 @@ fun AppNavigation() {
         ) { innerPadding ->
             Surface(modifier = Modifier.padding(innerPadding)) {
                 when (currentRoute) {
-                    "inicio" -> HomeScreen()
-                    else -> HomeScreen()
+                    "inicio" -> HomeScreen(favoritos = favoritos, onToggleFavorito = alternarFavorito)
+                    else -> HomeScreen(favoritos = favoritos, onToggleFavorito = alternarFavorito)
                 }
             }
         }

@@ -19,7 +19,10 @@ val listaProductosPrueba = listOf(
 val categoriasPrueba = listOf("Más vendidos", "Laptops", "Accesorios", "Ofertas")
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    favoritos: List<Int> = emptyList(),
+    onToggleFavorito: (Int) -> Unit = {}
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -46,8 +49,13 @@ fun HomeScreen() {
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items(listaProductosPrueba) { producto ->
-                TarjetaProducto(producto = producto)
+                TarjetaProducto(
+                    producto = producto,
+                    esFavorito = producto.id in favoritos,
+                    onToggleFavorito = { onToggleFavorito(producto.id) }
+                )
             }
         }
     }
 }
+
