@@ -11,11 +11,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +35,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.saludplus.citas.navigation.Rutas
+
+private data class DestinoNavegacion(
+    val ruta: String,
+    val titulo: String,
+    val icono: ImageVector
+)
 
 @Composable
 fun BotonPrincipal(
@@ -109,6 +124,37 @@ fun TarjetaAcceso(
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+@Composable
+fun BarraInferior(
+    rutaActual: String,
+    navController: NavController
+) {
+    val destinos = listOf(
+        DestinoNavegacion(Rutas.HOME, "Inicio", Icons.Default.Home),
+        DestinoNavegacion(Rutas.MIS_CITAS, "Citas", Icons.Default.CalendarMonth),
+        DestinoNavegacion(Rutas.RESULTADOS, "Resultados", Icons.Default.Description),
+        DestinoNavegacion(Rutas.PERFIL, "Perfil", Icons.Default.Person)
+    )
+
+    NavigationBar {
+        destinos.forEach { destino ->
+            NavigationBarItem(
+                selected = rutaActual == destino.ruta,
+                onClick = {
+                    if (rutaActual != destino.ruta) {
+                        navController.navigate(destino.ruta) {
+                            popUpTo(Rutas.HOME)
+                            launchSingleTop = true
+                        }
+                    }
+                },
+                icon = { Icon(imageVector = destino.icono, contentDescription = destino.titulo) },
+                label = { Text(text = destino.titulo) }
             )
         }
     }
