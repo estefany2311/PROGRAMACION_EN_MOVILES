@@ -45,6 +45,8 @@ import com.saludplus.citas.ui.theme.AzulClaro
 import com.saludplus.citas.ui.theme.MoradoSuave
 import com.saludplus.citas.ui.theme.NaranjaSuave
 import com.saludplus.citas.ui.theme.VerdeSuave
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MedicalServices
 
 @Composable
 fun HomeScreen(
@@ -103,29 +105,35 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Tarjetas de acceso en cuadrícula 2x2
+            // Primera fila: Locales y Mis citas
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 TarjetaAcceso(
-                    titulo = "Agendar cita",
-                    icono = Icons.Default.CalendarMonth,
+                    titulo = "Locales",
+                    icono = Icons.Default.LocationOn,
                     color = AzulClaro,
-                    onClick = { navController.navigate(Rutas.ESPECIALIDADES) },
+                    onClick = {
+                        navController.navigate(Rutas.LOCALES)
+                    },
                     modifier = Modifier.weight(1f)
                 )
+
                 TarjetaAcceso(
                     titulo = "Mis citas",
                     icono = Icons.Default.DateRange,
                     color = VerdeSuave,
-                    onClick = { navController.navigate(Rutas.MIS_CITAS) },
+                    onClick = {
+                        navController.navigate(Rutas.MIS_CITAS)
+                    },
                     modifier = Modifier.weight(1f)
                 )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Segunda fila: Mis datos y Resultados
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -134,14 +142,37 @@ fun HomeScreen(
                     titulo = "Mis datos",
                     icono = Icons.Default.Person,
                     color = MoradoSuave,
-                    onClick = { navController.navigate(Rutas.PERFIL) },
+                    onClick = {
+                        navController.navigate(Rutas.PERFIL)
+                    },
                     modifier = Modifier.weight(1f)
                 )
+
                 TarjetaAcceso(
                     titulo = "Resultados",
                     icono = Icons.Default.Description,
                     color = NaranjaSuave,
-                    onClick = { navController.navigate(Rutas.RESULTADOS) },
+                    onClick = {
+                        navController.navigate(Rutas.RESULTADOS)
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Tercera fila: Mis doctores
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                TarjetaAcceso(
+                    titulo = "Mis doctores",
+                    icono = Icons.Default.MedicalServices,
+                    color = AzulClaro,
+                    onClick = {
+                        navController.navigate(Rutas.MIS_DOCTORES)
+                    },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -161,7 +192,9 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 TextButton(
-                    onClick = { navController.navigate(Rutas.ESPECIALIDADES) }
+                    onClick = {
+                        navController.navigate(Rutas.ESPECIALIDADES)
+                    }
                 ) {
                     Text(text = "Ver todas")
                 }
@@ -178,7 +211,9 @@ fun HomeScreen(
                         modifier = Modifier
                             .width(88.dp)
                             .clickable {
-                                navController.navigate(Rutas.medicos(especialidad.id))
+                                navController.navigate(
+                                    Rutas.medicos(especialidad.id)
+                                )
                             }
                     ) {
                         Box(
@@ -194,7 +229,9 @@ fun HomeScreen(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
+
                         Spacer(modifier = Modifier.height(8.dp))
+
                         Text(
                             text = especialidad.nombre,
                             style = MaterialTheme.typography.bodySmall,
