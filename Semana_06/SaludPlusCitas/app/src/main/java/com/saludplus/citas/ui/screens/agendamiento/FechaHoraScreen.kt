@@ -52,6 +52,7 @@ import com.saludplus.citas.ui.components.BarraSuperior
 import com.saludplus.citas.ui.theme.AzulClaro
 import com.saludplus.citas.ui.theme.AzulPrimario
 import com.saludplus.citas.util.diasHabilesDeSemana
+import com.saludplus.citas.util.formatearFechaLarga
 import com.saludplus.citas.util.nombreDiaCorto
 import com.saludplus.citas.util.tituloMes
 
@@ -227,7 +228,18 @@ fun FechaHoraScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Muestra la fecha seleccionada formateada en español
+            if (fechaSeleccionada != null) {
+                Text(
+                    text = "Fecha seleccionada: ${formatearFechaLarga(fechaSeleccionada!!)}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
 
             // Horarios disponibles
             Text(
