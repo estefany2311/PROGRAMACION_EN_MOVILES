@@ -1,105 +1,133 @@
-# Clínica SaludPlus · App Paciente (Fase 1)
+# Clínica SaludPlus · App Paciente (Fase 2 - CON-IA)
 
-**Curso:** Programación en Móviles · 4to ciclo  
-**Alumna:** Karla Estefany Chavez Lazo  
-**Docente:** Juan José León Suiyon  
-**Rama:** `SIN-IA` · **Paquete:** `com.saludplus.citas`
+
+**Curso:** Programación en Móviles · 4to ciclo
+
+**Alumna:** Karla Estefany Chavez Lazo
 
 ## Descripción
-App móvil (Jetpack Compose) para agendar citas médicas: registro e inicio de sesión, elección de especialidad y médico, selección de fecha y hora, confirmación y consulta de citas. No usa base de datos: los datos viven en memoria dentro del objeto `Repositorio`.
+
+Versión evolucionada de la aplicación **SaludPlus Citas**, que incorpora mejoras asistidas por Inteligencia Artificial (IA).
+
+En esta fase se mejoró el módulo de agendamiento de citas, reemplazando la selección de fechas estática por un calendario dinámico e interactivo. Para ello, se utilizaron `java.time.LocalDate`, la navegación semanal y `DateTimeFormatter` para mostrar las fechas en español.
 
 ## Punto de partida
-El archivo `SaludPlusCitas.zip` no estuvo disponible. La **base** (modelos, rutas, navegación, tema y esqueletos) se reconstruyó desde cero.
 
-## Estructura del Proyecto
+Se tomó como base la rama `SIN-IA` (Fase 1) y se refactorizó la lógica de selección de fechas en la pantalla `FechaHoraScreen.kt`.
+
+Además, se creó el módulo auxiliar `CalendarioUtils.kt`, encargado de gestionar los días hábiles, la navegación entre semanas y el formato de las fechas.
+
+## Estructura del proyecto
 
 ```text
 com.saludplus.citas
 ├── MainActivity.kt
 ├── data
-│   ├── model         → Usuario, Especialidad, Medico, Cita
-│   └── repository    → Repositorio (object con mutableStateListOf)
-├── navigation        → Rutas.kt, AppNavigation.kt
+│   ├── model
+│   │   └── Usuario, Especialidad, Medico, Cita
+│   └── repository
+│       └── Repositorio
+├── navigation
+│   ├── Rutas.kt
+│   └── AppNavigation.kt
+├── util
+│   └── CalendarioUtils.kt
 └── ui
-    ├── theme         → Color.kt, Theme.kt, Type.kt
-    ├── components    → Componentes reutilizables (Botones, Campos, Barras)
-    └── screens       → auth, home, agendamiento, citas, perfil, resultados, notificaciones
+    ├── theme
+    │   ├── Color.kt
+    │   ├── Theme.kt
+    │   └── Type.kt
+    ├── components
+    │   └── Componentes reutilizables
+    └── screens
+        ├── auth
+        ├── home
+        ├── agendamiento
+        │   └── FechaHoraScreen.kt
+        ├── citas
+        ├── perfil
+        ├── resultados
+        └── notificaciones
 ```
-## Lo implementado
 
-**Repositorio** con colecciones en memoria (`any`, `find`, `filter`, `sortedByDescending`, `take`, `removeIf`).
-**Registro, login y sesión** con validaciones.
-**Inicio** con saludo, tarjetas, `LazyRow` de especialidades y `NavigationBar` (Inicio, Citas, Resultados, Perfil).
-**Flujo de agendamiento:** Especialidades (búsqueda en tiempo real), Médicos, Fecha y hora (`LazyVerticalGrid`), Confirmar cita y Cita agendada (`popUpTo`).
-**Mis citas** (con lista vacía) y **Perfil** (cerrar sesión).
-**Retos extra:** Detalle de cita, Resultados, Notificaciones y Términos.
+## Funcionalidades implementadas
 
+| Funcionalidad        | Descripción                                                                                |
+| -------------------- | ------------------------------------------------------------------------------------------ |
+| Calendario dinámico  | Genera los días hábiles de la semana utilizando `LocalDate`, omitiendo sábados y domingos. |
+| Navegación semanal   | Permite avanzar y retroceder entre semanas mediante controles interactivos.                |
+| Formato de fechas    | Utiliza `DateTimeFormatter` para mostrar las fechas en español.                            |
+| Interfaz dinámica    | Resalta el día seleccionado y actualiza el mes según la semana activa.                     |
+| Horarios disponibles | Filtra los horarios de acuerdo con la fecha seleccionada.                                  |
+| Documentación de IA  | Incluye el archivo `PROMPTS.md` con el registro de las instrucciones utilizadas.           |
 
-## Capturas
-## Capturas
+## Capturas de pantalla
 
-| Splash | Registro |
-| :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/ce8632f5-0e90-4d78-82f0-2b4f689a4edd" width="220" /> | <img src="https://github.com/user-attachments/assets/4dff628c-e50b-4d23-be74-299abb1913de" width="220" /> |
-
-| Inicio- validación | Especialidades |
-| :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/5bf41f89-306f-4a27-9c68-e58dc43e9ee0" width="220" /> | <img src="https://github.com/user-attachments/assets/456ed902-9c2d-4b71-af12-315c01718a51" width="220" /> |
-
-| Fecha y Hora | Confirmar Cita |
-| :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/7e8f0f78-3d12-4310-9296-29bb0bde7789" width="220" /> | <img src="https://github.com/user-attachments/assets/9adf18f9-3b0f-4c38-845c-a23da4a1efe2" width="220" /> |
-
-| Mis Citas | Perfil |
-| :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/73f59cce-8334-44a1-b0ec-bba1094bb3d0" width="220" /> | <img src="https://github.com/user-attachments/assets/f3e4cbe3-550f-44d1-8122-dc41f40e7ee1" width="220" /> |
-
-## Retos Extra
-
-| Términos | Resultados |
-| :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/645fc39b-0381-4d75-8f0a-1d0a64187758" width="220" /> | <img src="https://github.com/user-attachments/assets/a0a71163-b371-4bdf-85ee-c55b9f6f5471" width="220" /> |
-
-| Notificaciones | Cancelar alert |
-| :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/572e0e1e-cff1-4cd6-8116-39fe78efa597" width="220" /> | <img src="https://github.com/user-attachments/assets/1eb2f97c-2e6d-41a0-8eef-c59b012b07fd" width="220" /> |
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <h3>1. Fecha y hora — Semana actual</h3>
+      <img src="https://github.com/user-attachments/assets/e5420d45-6965-4384-b1bf-47fccfd49dc7" width="220" alt="Fecha y hora de la semana actual"/>
+    </td>
+    <td align="center" width="50%">
+      <h3>2. Selección de fecha en español</h3>
+      <img src="https://github.com/user-attachments/assets/b45ae69b-0ec8-4f38-960f-812cd4d67125" width="220" alt="Selección de fecha y formato en español"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <h3>3. Navegación y reservación — Siguiente mes</h3>
+      <img src="https://github.com/user-attachments/assets/ec342f4f-b54c-4483-8ae4-4215695098fd" width="220" alt="Navegación y reservación del siguiente mes"/>
+    </td>
+    <td align="center" width="50%">
+      <h3>4. Horarios disponibles filtrados</h3>
+      <img src="https://github.com/user-attachments/assets/eb63dbef-e901-4027-a011-a9f8142680b5" width="220" alt="Horarios disponibles según la fecha seleccionada"/>
+    </td>
+  </tr>
+</table>
 
 
+## Commits realizados
 
-## Commits
-6373946 Implementar MisCitasScreen y PerfilScreen con cierre de sesion
-f678bda implementar confirmacion, persistencia y pantalla de exito de la cita reservada
-002dc0e Implementar seleccion de fechas y horarios disponibles de cada Doctor
-d2f832b implementar listados, busqueda de especialidades y medicos
-d67ebf4 NavigationBar con 4 destinos (Inicio, Citas, Resultados, Perfil)
-2e9ae6a implementar componentes base y pantallas auth con validaciones
-6073840 Repositorio: usuarios, especialidades, médicos y citas
-577cc3a Agregar base del proyecto (modelos, rutas, navegación)
+Los siguientes commits registran los cambios principales de la Fase 2:
 
-
+1. `mostrar la fecha en espanol con DateTimeFormatter`
+2. `navegar por semanas y mostrar el mes dinamico`
+3. `generar los dias habiles con LocalDate`
+4. `traer SaludPlusCitas de sin-ia como base de la Fase 2`
 
 ## Preguntas de reflexión
 
-¿Por qué el Repositorio es un object?
-Garantiza una única instancia compartida por toda la app (Singleton). Si fuera una clase normal, cada pantalla tendría listas distintas y no se compartirían las citas ni el bloqueo de horarios.
+### 1. ¿Por qué se utilizó `java.time.LocalDate` en lugar de `java.util.Date`?
 
-2. ¿Cómo se actualizan solas las búsquedas y horarios?
+Se utilizó `LocalDate` porque es una API moderna de Java que permite trabajar con fechas de forma más sencilla. Es inmutable y cuenta con métodos como `plusWeeks()` y `plusDays()`, que facilitan el cálculo de fechas sin necesidad de escribir tanto código.
 
-Gracias al estado de Jetpack Compose (mutableStateOf y mutableStateListOf). Cuando el estado cambia, Compose re-ejecuta el bloque correspondiente y redibuja la lista automáticamente.
+### 2. ¿Cómo garantiza el sistema que no se agenden citas en fines de semana?
 
-3. ¿Diferencia entre navigate() normal y popUpTo?
+En `CalendarioUtils.kt` se filtran los días de la semana utilizando `DayOfWeek`. De esta manera, se excluyen los sábados y domingos y se muestran únicamente los días de lunes a viernes en el calendario.
 
-El navigate() normal apila pantallas. El uso de popUpTo elimina pantallas del historial para evitar regresar a formularios ya completados o evitar volver al Inicio estando deslogueado.
+### 3. ¿Cómo se logra la reactividad al cambiar de semana en Jetpack Compose?
 
-4. NavigationDrawer vs NavigationBar:
+Se utiliza una variable de estado llamada `semanaActual`, administrada mediante `remember` y `mutableIntStateOf`. Al presionar las flechas de navegación, el estado cambia y Jetpack Compose actualiza automáticamente la interfaz y los días que se muestran en el calendario.
 
-NavigationDrawer sirve para menús extensos u ocultos. NavigationBar es ideal para navegación frecuente de 3 a 5 secciones principales siempre visibles.
+### 4. ¿Cuál es la ventaja de estructurar las respuestas de la IA en un archivo `PROMPTS.md`?
+
+Permite registrar los prompts utilizados durante el desarrollo, mantener un historial de las instrucciones proporcionadas a la IA y comprender mejor cómo se realizaron los cambios. También facilita la revisión del trabajo y la trazabilidad del código implementado.
 
 ## Observaciones
 
-La lista de usuarios empieza vacía: hay que registrarse antes de iniciar sesión. Los datos se pierden al cerrar la app.
+Para mostrar correctamente los nombres de los días y los meses en español, se utiliza la configuración regional `Locale("es", "ES")` dentro de `DateTimeFormatter`.
+
+Esto permite presentar las fechas de una forma más clara y familiar para los usuarios de la aplicación.
 
 ## Conclusiones
-1. Jetpack Compose simplifica el desarrollo UI mediante el manejo de estados reactivos sin manipular las vistas manualmente.
 
-2. Centralizar la lógica en un Repositorio único mantuvo un flujo de datos limpio y coherente entre todas las pantallas de la aplicación. has que solo la estrutura tenga el fromato lo demas normal 
+* La integración de `java.time.LocalDate` permitió simplificar el cálculo de fechas y la generación de los días hábiles del calendario.
+* La navegación semanal y la actualización dinámica de la interfaz mejoraron el proceso de selección de fechas para el agendamiento de citas.
+* El uso de prompts asistidos por IA facilitó el desarrollo del módulo de utilidades, manteniendo la estructura existente del proyecto y documentando los cambios realizados.
+
+---
+
+**Proyecto académico:** Clínica SaludPlus · App Paciente
+**Fase:** 2 — CON-IA
+**Desarrollo:** Kotlin · Jetpack Compose
