@@ -26,4 +26,8 @@ object Rutas {
     fun confirmarCita(medicoId: Int, fecha: String, hora: String) = "confirmarCita/$medicoId/$fecha/$hora"
     fun citaExitosa(citaId: Int) = "citaExitosa/$citaId"
     fun detalleCita(citaId: Int) = "detalleCita/$citaId"
+
+    const val LOCALES = "locales"
+    const val MIS_DOCTORES = "misDoctores"
+
 }

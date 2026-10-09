@@ -21,7 +21,8 @@ import com.saludplus.citas.ui.screens.home.HomeScreen
 import com.saludplus.citas.ui.screens.notificaciones.NotificacionesScreen
 import com.saludplus.citas.ui.screens.perfil.PerfilScreen
 import com.saludplus.citas.ui.screens.resultados.ResultadosScreen
-
+import com.saludplus.citas.ui.screens.agendamiento.LocalesScreen
+import com.saludplus.citas.ui.screens.doctores.MisDoctoresScreen
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -33,11 +34,19 @@ fun AppNavigation() {
         composable(Rutas.LOGIN) { LoginScreen(navController) }
         composable(Rutas.TERMINOS) { TerminosScreen(navController) }
         composable(Rutas.HOME) { HomeScreen(navController) }
+        composable(Rutas.LOCALES) {
+            LocalesScreen(navController)
+        }
+
+        composable(Rutas.MIS_DOCTORES) {
+            MisDoctoresScreen(navController)
+        }
         composable(Rutas.ESPECIALIDADES) { EspecialidadesScreen(navController) }
         composable(Rutas.MIS_CITAS) { MisCitasScreen(navController) }
         composable(Rutas.PERFIL) { PerfilScreen(navController) }
         composable(Rutas.RESULTADOS) { ResultadosScreen(navController) }
         composable(Rutas.NOTIFICACIONES) { NotificacionesScreen(navController) }
+
 
         composable(
             route = Rutas.MEDICOS,
@@ -49,7 +58,11 @@ fun AppNavigation() {
 
         composable(
             route = Rutas.FECHA_HORA,
-            arguments = listOf(navArgument("medicoId") { type = NavType.IntType })
+            arguments = listOf(
+                navArgument("medicoId") {
+                    type = NavType.IntType
+                }
+            )
         ) { entrada ->
             val medicoId = entrada.arguments?.getInt("medicoId") ?: 0
             FechaHoraScreen(navController, medicoId)
