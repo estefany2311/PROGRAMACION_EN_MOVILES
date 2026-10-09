@@ -1,15 +1,63 @@
 package com.saludplus.citas.ui.components
 
-// Aquí (o en archivos nuevos de este paquete) debes crear los componentes reutilizables.
-// Sugerencias según el diseño de referencia:
-//
-// - BotonPrincipal        : botón azul redondeado de ancho completo (Comenzar, Registrarme, Continuar, Agendar cita)
-// - CampoTexto            : OutlinedTextField con ícono a la izquierda y etiqueta (Registro, Login)
-// - BarraSuperior         : título + flecha de volver (Especialidades, Médicos, Fecha y hora, Confirmar)
-// - BarraInferior         : NavigationBar con Inicio, Citas, Resultados y Perfil
-// - TarjetaAcceso         : tarjeta de color con ícono y texto (Agendar cita, Mis citas, Mis datos, Resultados)
-// - TarjetaEspecialidad   : fila con ícono, nombre, descripción y flecha
-// - TarjetaMedico         : foto o inicial, nombre, especialidad, calificación y etiqueta de disponibilidad
-// - ChipDia / ChipHora    : elemento seleccionable para el día y la hora
-// - FilaDato              : ícono + etiqueta + valor (Confirmar cita y Perfil)
-// - EstadoVacio           : mensaje cuando una lista no tiene elementos (Mis citas)
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun BotonPrincipal(
+    texto: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(52.dp),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Text(text = texto)
+    }
+}
+
+@Composable
+fun CampoTexto(
+    valor: String,
+    alCambiar: (String) -> Unit,
+    etiqueta: String,
+    icono: ImageVector,
+    modifier: Modifier = Modifier,
+    error: String? = null,
+    teclado: KeyboardType = KeyboardType.Text,
+    oculto: Boolean = false
+) {
+    OutlinedTextField(
+        value = valor,
+        onValueChange = alCambiar,
+        label = { Text(etiqueta) },
+        leadingIcon = { Icon(imageVector = icono, contentDescription = null) },
+        isError = error != null,
+        supportingText = {
+            if (error != null) {
+                Text(text = error)
+            }
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = teclado),
+        visualTransformation = if (oculto) PasswordVisualTransformation() else VisualTransformation.None,
+        singleLine = true,
+        modifier = modifier.fillMaxWidth()
+    )
+}
