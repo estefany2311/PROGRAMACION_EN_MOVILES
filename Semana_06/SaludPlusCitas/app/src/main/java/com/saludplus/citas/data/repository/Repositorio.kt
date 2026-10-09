@@ -23,6 +23,7 @@ object Repositorio {
     // ---------- COLECCIONES  ----------
     val usuarios = mutableStateListOf<Usuario>()
     var usuarioActual by mutableStateOf<Usuario?>(null)
+    var localSeleccionado by mutableStateOf("")
 
     val especialidades = listOf(
         Especialidad(1, "Medicina General", "Atención integral", Icons.Default.MedicalServices),

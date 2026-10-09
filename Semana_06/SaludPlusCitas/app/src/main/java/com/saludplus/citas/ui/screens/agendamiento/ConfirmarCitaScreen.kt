@@ -183,8 +183,10 @@ fun ConfirmarCitaScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     ElementoResumen(
                         icono = Icons.Default.LocationOn,
-                        titulo = "Dirección",
-                        valor = "Av. Los Olivos 123, Lima"
+                        titulo = "Local de atención",
+                        valor = Repositorio.localSeleccionado.ifBlank {
+                            "No se seleccionó un local"
+                        }
                     )
                 }
             }
