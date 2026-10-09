@@ -21,14 +21,20 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,6 +51,9 @@ import com.saludplus.citas.navigation.Rutas
 import com.saludplus.citas.ui.components.BarraSuperior
 import com.saludplus.citas.ui.theme.AzulClaro
 import com.saludplus.citas.ui.theme.AzulPrimario
+import com.saludplus.citas.util.diasHabilesDeSemana
+import com.saludplus.citas.util.nombreDiaCorto
+import com.saludplus.citas.util.tituloMes
 
 @Composable
 fun FechaHoraScreen(
@@ -54,17 +63,11 @@ fun FechaHoraScreen(
     val medico = Repositorio.obtenerMedico(medicoId)
     val especialidad = medico?.let { Repositorio.obtenerEspecialidad(it.especialidadId) }
 
+    var semanaActual by remember { mutableIntStateOf(0) }
+    val diasHabiles = remember(semanaActual) { diasHabilesDeSemana(semanaActual) }
+
     var fechaSeleccionada by remember { mutableStateOf<String?>(null) }
     var horaSeleccionada by remember { mutableStateOf<String?>(null) }
-
-    // Lista fija de 5 fechas hábiles para Fase 1
-    val fechasHabiles = listOf(
-        "2026-10-12",
-        "2026-10-13",
-        "2026-10-14",
-        "2026-10-15",
-        "2026-10-16"
-    )
 
     Scaffold(
         topBar = {
@@ -108,7 +111,7 @@ fun FechaHoraScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
-            // Paso 1: Encabezado con información del Médico
+            // Información del Médico
             medico?.let { m ->
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -151,40 +154,74 @@ fun FechaHoraScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Paso 2: Selección de Día
-            Text(
-                text = "Selecciona un día",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold
-            )
+            // Control de semanas y título del mes
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = { if (semanaActual > 0) semanaActual-- },
+                    enabled = semanaActual > 0
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Semana anterior"
+                    )
+                }
+
+                Text(
+                    text = if (diasHabiles.isNotEmpty()) tituloMes(diasHabiles.first()) else "",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                IconButton(
+                    onClick = { semanaActual++ }
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Siguiente semana"
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Tarjetas dinámicas de días hábiles
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(fechasHabiles) { fecha ->
-                    val esSeleccionado = fechaSeleccionada == fecha
+                items(diasHabiles) { fecha ->
+                    val fechaIso = fecha.toString()
+                    val esSeleccionado = fechaSeleccionada == fechaIso
 
-                    Box(
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .clip(RoundedCornerShape(10.dp))
                             .background(
                                 if (esSeleccionado) AzulPrimario else MaterialTheme.colorScheme.surfaceVariant
                             )
                             .clickable {
-                                fechaSeleccionada = fecha
-                                horaSeleccionada = null // Reiniciar hora al cambiar fecha
+                                fechaSeleccionada = fechaIso
+                                horaSeleccionada = null
                             }
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
-                        contentAlignment = Alignment.Center
+                            .padding(horizontal = 14.dp, vertical = 10.dp)
                     ) {
                         Text(
-                            text = fecha,
+                            text = nombreDiaCorto(fecha),
+                            color = if (esSeleccionado) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = fecha.dayOfMonth.toString(),
                             color = if (esSeleccionado) Color.White else MaterialTheme.colorScheme.onSurface,
-                            fontWeight = if (esSeleccionado) FontWeight.Bold else FontWeight.Normal,
-                            style = MaterialTheme.typography.bodyMedium
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleSmall
                         )
                     }
                 }
@@ -192,7 +229,7 @@ fun FechaHoraScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Paso 3: Selección de Horario
+            // Horarios disponibles
             Text(
                 text = "Horarios disponibles",
                 style = MaterialTheme.typography.titleSmall,
@@ -236,9 +273,7 @@ fun FechaHoraScreen(
                                         color = if (esSeleccionada) AzulPrimario else Color.Transparent,
                                         shape = RoundedCornerShape(8.dp)
                                     )
-                                    .clickable {
-                                        horaSeleccionada = hora
-                                    }
+                                    .clickable { horaSeleccionada = hora }
                                     .padding(vertical = 12.dp),
                                 contentAlignment = Alignment.Center
                             ) {
