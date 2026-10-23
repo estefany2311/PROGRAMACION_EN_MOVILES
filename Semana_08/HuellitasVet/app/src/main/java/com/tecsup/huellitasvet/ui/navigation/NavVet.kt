@@ -46,12 +46,15 @@ import com.tecsup.huellitasvet.ui.dueno.FormularioMascotaScreen
 import com.tecsup.huellitasvet.ui.dueno.InicioScreen
 import com.tecsup.huellitasvet.ui.dueno.LoginScreen
 import com.tecsup.huellitasvet.ui.dueno.MascotasScreen
+import com.tecsup.huellitasvet.ui.dueno.MisCitasScreen
 import com.tecsup.huellitasvet.ui.dueno.PedirCitaScreen
+import com.tecsup.huellitasvet.ui.dueno.PerfilScreen
 import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.ui.veterinario.ServiciosScreen
 import com.tecsup.huellitasvet.viewmodel.InicioViewModel
 import com.tecsup.huellitasvet.viewmodel.MascotaViewModel
+import com.tecsup.huellitasvet.viewmodel.MisCitasViewModel
 import com.tecsup.huellitasvet.viewmodel.PedirCitaViewModel
 import com.tecsup.huellitasvet.viewmodel.ServiciosViewModel
 import com.tecsup.huellitasvet.viewmodel.SesionViewModel
@@ -184,11 +187,16 @@ fun NavVet(app: VetApp) {
                             }
                         )
                     }
-                    // TODO (Paso 10): mis citas
-                    composable(Rutas.MIS_CITAS) { PantallaPendiente("Mis citas") }
-                    // TODO (Paso 13): perfil completo
+                    composable(Rutas.MIS_CITAS) {
+                        val vm: MisCitasViewModel = viewModel(
+                            key = "miscitas-$usuarioId",
+                            factory = VetViewModelFactory { MisCitasViewModel(app.repository, usuarioId) }
+                        )
+                        MisCitasScreen(vm, onPedirCita = { nav.navigate(Rutas.pedirCita()) })
+                    }
+                    // TODO (Paso 13): completar el perfil
                     composable(Rutas.PERFIL) {
-                        PantallaTemporal(usuario, onCerrarSesion = { cerrarSesion(nav, sesion) })
+                        PerfilScreen(usuario, onCerrarSesion = { cerrarSesion(nav, sesion) })
                     }
                 }
 
