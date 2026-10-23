@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tecsup.huellitasvet.data.local.entity.Mascota
 import com.tecsup.huellitasvet.data.local.entity.Servicio
+import com.tecsup.huellitasvet.data.prefs.PreferenciasStore
 import com.tecsup.huellitasvet.data.repository.VetRepository
 import com.tecsup.huellitasvet.model.Horarios
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,6 +28,7 @@ data class HorarioUi(val hora: String, val ocupado: Boolean, val pasado: Boolean
 @OptIn(ExperimentalCoroutinesApi::class)
 class PedirCitaViewModel(
     private val repo: VetRepository,
+    prefs: PreferenciasStore,
     duenoId: Int,
     mascotaInicial: Int = 0
 ) : ViewModel() {
@@ -37,6 +39,10 @@ class PedirCitaViewModel(
     // Solo servicios ACTIVOS: los inactivos no aparecen al pedir cita
     val servicios: StateFlow<List<Servicio>> = repo.observarServiciosActivos()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Ajuste del veterinario: si la clinica no recibe citas, el dueño no puede pedir una
+    val aceptaCitas: StateFlow<Boolean> = prefs.aceptarCitas
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
     // De hoy hasta 7 dias
     val fechas: List<LocalDate> = (0L..7L).map { LocalDate.now().plusDays(it) }
@@ -76,8 +82,8 @@ class PedirCitaViewModel(
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val puedeConfirmar: StateFlow<Boolean> = combine(_mascotaId, _servicioId, _hora) { m, s, h ->
-        m > 0 && s > 0 && h != null
+    val puedeConfirmar: StateFlow<Boolean> = combine(_mascotaId, _servicioId, _hora, aceptaCitas) { m, s, h, acepta ->
+        acepta && m > 0 && s > 0 && h != null
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun elegirMascota(id: Int) { _mascotaId.value = id }
@@ -104,6 +110,7 @@ class PedirCitaViewModel(
         val h = _hora.value
         val dia = LocalDate.parse(f)
         when {
+            !aceptaCitas.value -> { _mensaje.value = "La clínica no está recibiendo citas"; return }
             mascota == null -> { _mensaje.value = "Elige una de tus mascotas"; return }
             servicio == null || !servicio.activo -> { _mensaje.value = "Elige un servicio disponible"; return }
             dia.isBefore(LocalDate.now()) || dia.isAfter(LocalDate.now().plusDays(7)) -> {

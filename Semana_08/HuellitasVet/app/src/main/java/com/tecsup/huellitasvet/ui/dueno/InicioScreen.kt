@@ -159,7 +159,7 @@ private fun TarjetaProximaCita(proxima: CitaConDetalle?) {
                         fontWeight = FontWeight.SemiBold,
                         color = cs.primary,
                         modifier = Modifier
-                            .background(Color.White, RoundedCornerShape(50))
+                            .background(cs.onPrimary, RoundedCornerShape(50))
                             .padding(horizontal = 10.dp, vertical = 3.dp)
                     )
                 }

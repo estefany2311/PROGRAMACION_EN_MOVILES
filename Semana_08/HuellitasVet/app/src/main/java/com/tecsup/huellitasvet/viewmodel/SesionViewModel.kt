@@ -33,6 +33,12 @@ class SesionViewModel(
     val modoOscuro: StateFlow<Boolean> = prefs.modoOscuro
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
+    val notificaciones: StateFlow<Boolean> = prefs.notificaciones
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+    val aceptarCitas: StateFlow<Boolean> = prefs.aceptarCitas
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
     init {
         // Si ya hay perfil guardado, se recupera el usuario y se salta el login
         viewModelScope.launch {
@@ -69,6 +75,21 @@ class SesionViewModel(
 
     fun limpiarError() {
         _error.value = null
+    }
+
+    fun cambiarModoOscuro(b: Boolean) { viewModelScope.launch { prefs.guardarModoOscuro(b) } }
+    fun cambiarNotificaciones(b: Boolean) { viewModelScope.launch { prefs.guardarNotificaciones(b) } }
+    fun cambiarAceptarCitas(b: Boolean) { viewModelScope.launch { prefs.guardarAceptarCitas(b) } }
+
+    // Modo practica: guarda el otro perfil (su primer usuario) y lo deja como sesion activa
+    fun cambiarPerfil() {
+        val actual = _usuarioActual.value ?: return
+        val otro = if (actual.rol == Rol.ADMIN.name) Rol.CLIENTE else Rol.ADMIN
+        viewModelScope.launch {
+            val usuario = repo.primerUsuarioConRol(otro) ?: return@launch
+            prefs.guardarSesion(usuario.rol, usuario.id)
+            _usuarioActual.value = usuario
+        }
     }
 
     fun cerrarSesion() {

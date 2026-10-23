@@ -1,11 +1,7 @@
 package com.tecsup.huellitasvet.ui.navigation
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
@@ -26,10 +22,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -43,7 +37,6 @@ import androidx.navigation.compose.rememberNavController
 import com.tecsup.huellitasvet.VetApp
 import com.tecsup.huellitasvet.data.local.entity.Usuario
 import com.tecsup.huellitasvet.model.Rol
-import com.tecsup.huellitasvet.ui.components.VetButton
 import com.tecsup.huellitasvet.ui.dueno.FichaMascotaScreen
 import com.tecsup.huellitasvet.ui.dueno.FormularioMascotaScreen
 import com.tecsup.huellitasvet.ui.dueno.InicioScreen
@@ -55,7 +48,9 @@ import com.tecsup.huellitasvet.ui.dueno.PerfilScreen
 import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.ui.veterinario.AgendaScreen
+import com.tecsup.huellitasvet.ui.veterinario.AjustesScreen
 import com.tecsup.huellitasvet.ui.veterinario.AtenderCitaScreen
+import com.tecsup.huellitasvet.ui.veterinario.FormularioServicioScreen
 import com.tecsup.huellitasvet.ui.veterinario.PacientesScreen
 import com.tecsup.huellitasvet.ui.veterinario.PanelScreen
 import com.tecsup.huellitasvet.ui.veterinario.ServiciosScreen
@@ -99,6 +94,8 @@ fun NavVet(app: VetApp) {
     val usuario by sesion.usuarioActual.collectAsStateWithLifecycle()
     val revisada by sesion.sesionRevisada.collectAsStateWithLifecycle()
     val oscuro by sesion.modoOscuro.collectAsStateWithLifecycle()
+    val notificaciones by sesion.notificaciones.collectAsStateWithLifecycle()
+    val aceptarCitas by sesion.aceptarCitas.collectAsStateWithLifecycle()
     val rolTema = if (usuario?.rol == Rol.ADMIN.name) Rol.ADMIN else Rol.CLIENTE
     val usuarioId = usuario?.id ?: 0
 
@@ -108,6 +105,16 @@ fun NavVet(app: VetApp) {
         barraDueno.any { it.ruta == rutaActual } -> barraDueno
         barraVet.any { it.ruta == rutaActual } -> barraVet
         else -> null
+    }
+
+    // Cambiar de perfil: si el rol de la sesion ya no es el del grafo actual, se va al otro grafo
+    LaunchedEffect(usuario) {
+        val u = usuario ?: return@LaunchedEffect
+        val grafoActual = nav.currentBackStackEntry?.destination?.parent?.route
+        val esperado = if (u.rol == Rol.ADMIN.name) Rutas.GRAFO_VET else Rutas.GRAFO_DUENO
+        if ((grafoActual == Rutas.GRAFO_DUENO || grafoActual == Rutas.GRAFO_VET) && grafoActual != esperado) {
+            irAGrafo(nav, u)
+        }
     }
 
     VetTheme(rolTema, oscuro) {
@@ -196,7 +203,7 @@ fun NavVet(app: VetApp) {
                     ) { e ->
                         val mascotaId = e.arguments?.getInt("mascotaId") ?: 0
                         val vm: PedirCitaViewModel = viewModel(
-                            factory = VetViewModelFactory { PedirCitaViewModel(app.repository, usuarioId, mascotaId) }
+                            factory = VetViewModelFactory { PedirCitaViewModel(app.repository, app.preferencias, usuarioId, mascotaId) }
                         )
                         PedirCitaScreen(
                             vm = vm,
@@ -217,9 +224,30 @@ fun NavVet(app: VetApp) {
                         )
                         MisCitasScreen(vm, onPedirCita = { nav.navigate(Rutas.pedirCita()) })
                     }
-                    // TODO (Paso 13): completar el perfil
                     composable(Rutas.PERFIL) {
-                        PerfilScreen(usuario, onCerrarSesion = { cerrarSesion(nav, sesion) })
+                        val inicio: InicioViewModel = viewModel(
+                            key = "mascotas-$usuarioId",
+                            factory = VetViewModelFactory { InicioViewModel(app.repository, usuarioId) }
+                        )
+                        val citas: MisCitasViewModel = viewModel(
+                            key = "miscitas-$usuarioId",
+                            factory = VetViewModelFactory { MisCitasViewModel(app.repository, usuarioId) }
+                        )
+                        val mascotas by inicio.mascotas.collectAsStateWithLifecycle()
+                        val proximas by citas.proximas.collectAsStateWithLifecycle()
+                        val atenciones by citas.atenciones.collectAsStateWithLifecycle()
+                        PerfilScreen(
+                            usuario = usuario,
+                            mascotas = mascotas.size,
+                            proximas = proximas.size,
+                            atenciones = atenciones,
+                            modoOscuro = oscuro,
+                            recordatorios = notificaciones,
+                            onModoOscuro = sesion::cambiarModoOscuro,
+                            onRecordatorios = sesion::cambiarNotificaciones,
+                            onCambiarPerfil = sesion::cambiarPerfil,
+                            onCerrarSesion = { cerrarSesion(nav, sesion) }
+                        )
                     }
                 }
 
@@ -267,11 +295,28 @@ fun NavVet(app: VetApp) {
                     }
                     composable(Rutas.SERVICIOS) {
                         val vm: ServiciosViewModel = viewModel(factory = VetViewModelFactory { ServiciosViewModel(app.repository) })
-                        ServiciosScreen(vm, onEditar = { /* TODO (Paso 13): formulario de servicio */ })
+                        ServiciosScreen(vm, onEditar = { nav.navigate(Rutas.formServicio(it)) })
                     }
-                    // TODO (Paso 13): AjustesScreen
+                    composable(
+                        Rutas.FORM_SERVICIO,
+                        arguments = listOf(navArgument("id") { type = NavType.IntType; defaultValue = 0 })
+                    ) { e ->
+                        val id = e.arguments?.getInt("id") ?: 0
+                        val vm: ServiciosViewModel = viewModel(factory = VetViewModelFactory { ServiciosViewModel(app.repository) })
+                        FormularioServicioScreen(vm, servicioId = id, onTerminar = { nav.popBackStack() })
+                    }
                     composable(Rutas.AJUSTES) {
-                        PantallaTemporal(usuario, onCerrarSesion = { cerrarSesion(nav, sesion) })
+                        AjustesScreen(
+                            usuario = usuario,
+                            modoOscuro = oscuro,
+                            notificaciones = notificaciones,
+                            aceptarCitas = aceptarCitas,
+                            onModoOscuro = sesion::cambiarModoOscuro,
+                            onNotificaciones = sesion::cambiarNotificaciones,
+                            onAceptarCitas = sesion::cambiarAceptarCitas,
+                            onCambiarPerfil = sesion::cambiarPerfil,
+                            onCerrarSesion = { cerrarSesion(nav, sesion) }
+                        )
                     }
                 }
             }
@@ -319,24 +364,5 @@ private fun cerrarSesion(nav: NavHostController, sesion: SesionViewModel) {
     sesion.cerrarSesion()
     nav.navigate(Rutas.LOGIN) {
         popUpTo(0) { inclusive = true }
-    }
-}
-
-// Pantalla provisional hasta que exista Ajustes (Paso 13)
-@Composable
-private fun PantallaTemporal(usuario: Usuario?, onCerrarSesion: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Hola, ${usuario?.nombre ?: ""}", style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.primary)
-        Text("Sesión iniciada como ${usuario?.let { Rol.valueOf(it.rol).etiqueta } ?: ""}",
-            color = MaterialTheme.colorScheme.onBackground)
-        VetButton("Cerrar sesión", onClick = onCerrarSesion, contorno = true)
     }
 }

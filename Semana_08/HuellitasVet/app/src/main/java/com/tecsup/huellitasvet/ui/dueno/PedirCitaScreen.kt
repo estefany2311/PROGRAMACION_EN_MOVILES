@@ -42,6 +42,7 @@ import com.tecsup.huellitasvet.ui.components.MascotaAvatar
 import com.tecsup.huellitasvet.ui.components.VetButton
 import com.tecsup.huellitasvet.ui.components.soles
 import com.tecsup.huellitasvet.ui.theme.GrisOcupado
+import com.tecsup.huellitasvet.ui.theme.Rojo
 import com.tecsup.huellitasvet.viewmodel.PedirCitaViewModel
 
 @Composable
@@ -56,6 +57,7 @@ fun PedirCitaScreen(vm: PedirCitaViewModel, onVolver: () -> Unit, onCreada: () -
     val puedeConfirmar by vm.puedeConfirmar.collectAsStateWithLifecycle()
     val mensaje by vm.mensaje.collectAsStateWithLifecycle()
     val creada by vm.creada.collectAsStateWithLifecycle()
+    val aceptaCitas by vm.aceptaCitas.collectAsStateWithLifecycle()
     LaunchedEffect(creada) { if (creada) onCreada() }
 
     val cs = MaterialTheme.colorScheme
@@ -70,6 +72,18 @@ fun PedirCitaScreen(vm: PedirCitaViewModel, onVolver: () -> Unit, onCreada: () -
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
         ) {
+            if (!aceptaCitas) {
+                Text(
+                    "La clínica no está recibiendo citas",
+                    color = Rojo,
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                        .background(Rojo.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                        .padding(14.dp)
+                )
+            }
             Titulo("¿Quién viene?")
             LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(mascotas, key = { it.id }) { m ->
