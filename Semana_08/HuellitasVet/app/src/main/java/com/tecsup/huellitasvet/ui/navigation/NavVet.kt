@@ -43,7 +43,6 @@ import androidx.navigation.compose.rememberNavController
 import com.tecsup.huellitasvet.VetApp
 import com.tecsup.huellitasvet.data.local.entity.Usuario
 import com.tecsup.huellitasvet.model.Rol
-import com.tecsup.huellitasvet.ui.components.AppTopBar
 import com.tecsup.huellitasvet.ui.components.VetButton
 import com.tecsup.huellitasvet.ui.dueno.FichaMascotaScreen
 import com.tecsup.huellitasvet.ui.dueno.FormularioMascotaScreen
@@ -56,9 +55,13 @@ import com.tecsup.huellitasvet.ui.dueno.PerfilScreen
 import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.ui.veterinario.AgendaScreen
+import com.tecsup.huellitasvet.ui.veterinario.AtenderCitaScreen
+import com.tecsup.huellitasvet.ui.veterinario.PacientesScreen
 import com.tecsup.huellitasvet.ui.veterinario.PanelScreen
 import com.tecsup.huellitasvet.ui.veterinario.ServiciosScreen
 import com.tecsup.huellitasvet.viewmodel.AgendaViewModel
+import com.tecsup.huellitasvet.viewmodel.AtenderCitaViewModel
+import com.tecsup.huellitasvet.viewmodel.PacientesViewModel
 import com.tecsup.huellitasvet.viewmodel.PanelViewModel
 import com.tecsup.huellitasvet.viewmodel.InicioViewModel
 import com.tecsup.huellitasvet.viewmodel.MascotaViewModel
@@ -230,9 +233,38 @@ fun NavVet(app: VetApp) {
                         val vm: AgendaViewModel = viewModel(factory = VetViewModelFactory { AgendaViewModel(app.repository) })
                         AgendaScreen(vm, onAtender = { nav.navigate(Rutas.atenderCita(it)) })
                     }
-                    // TODO (Paso 12): atender cita y pacientes
-                    composable(Rutas.ATENDER_CITA) { PantallaPendiente("Atender cita", onVolver = { nav.popBackStack() }) }
-                    composable(Rutas.PACIENTES) { PantallaPendiente("Pacientes") }
+                    composable(
+                        Rutas.ATENDER_CITA,
+                        arguments = listOf(navArgument("citaId") { type = NavType.IntType })
+                    ) { e ->
+                        val citaId = e.arguments?.getInt("citaId") ?: 0
+                        val vm: AtenderCitaViewModel = viewModel(
+                            factory = VetViewModelFactory { AtenderCitaViewModel(app.repository, citaId) }
+                        )
+                        AtenderCitaScreen(vm, onTerminar = { nav.popBackStack() })
+                    }
+                    composable(Rutas.PACIENTES) {
+                        val vm: PacientesViewModel = viewModel(factory = VetViewModelFactory { PacientesViewModel(app.repository) })
+                        PacientesScreen(vm, onVerPaciente = { nav.navigate(Rutas.fichaPaciente(it)) })
+                    }
+                    // Ficha con historial para el veterinario (solo lectura)
+                    composable(
+                        Rutas.FICHA_PACIENTE,
+                        arguments = listOf(navArgument("id") { type = NavType.IntType })
+                    ) { e ->
+                        val id = e.arguments?.getInt("id") ?: 0
+                        val vm: MascotaViewModel = viewModel(
+                            factory = VetViewModelFactory { MascotaViewModel(app.repository, 0, id) }
+                        )
+                        FichaMascotaScreen(
+                            vm = vm,
+                            mascotaId = id,
+                            onVolver = { nav.popBackStack() },
+                            onPedirCita = {},
+                            onEditar = {},
+                            soloLectura = true
+                        )
+                    }
                     composable(Rutas.SERVICIOS) {
                         val vm: ServiciosViewModel = viewModel(factory = VetViewModelFactory { ServiciosViewModel(app.repository) })
                         ServiciosScreen(vm, onEditar = { /* TODO (Paso 13): formulario de servicio */ })
@@ -290,21 +322,7 @@ private fun cerrarSesion(nav: NavHostController, sesion: SesionViewModel) {
     }
 }
 
-// Pantallas provisionales: se reemplazan en los siguientes pasos
-@Composable
-private fun PantallaPendiente(titulo: String, onVolver: (() -> Unit)? = null) {
-    Scaffold(
-        topBar = { AppTopBar(titulo, onVolver = onVolver) },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { padding ->
-        Text(
-            "Se construye en el siguiente paso",
-            modifier = Modifier.padding(padding).padding(24.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
+// Pantalla provisional hasta que exista Ajustes (Paso 13)
 @Composable
 private fun PantallaTemporal(usuario: Usuario?, onCerrarSesion: () -> Unit) {
     Column(
