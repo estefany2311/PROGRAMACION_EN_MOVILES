@@ -46,11 +46,13 @@ import com.tecsup.huellitasvet.ui.dueno.FormularioMascotaScreen
 import com.tecsup.huellitasvet.ui.dueno.InicioScreen
 import com.tecsup.huellitasvet.ui.dueno.LoginScreen
 import com.tecsup.huellitasvet.ui.dueno.MascotasScreen
+import com.tecsup.huellitasvet.ui.dueno.PedirCitaScreen
 import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.ui.veterinario.ServiciosScreen
 import com.tecsup.huellitasvet.viewmodel.InicioViewModel
 import com.tecsup.huellitasvet.viewmodel.MascotaViewModel
+import com.tecsup.huellitasvet.viewmodel.PedirCitaViewModel
 import com.tecsup.huellitasvet.viewmodel.ServiciosViewModel
 import com.tecsup.huellitasvet.viewmodel.SesionViewModel
 import com.tecsup.huellitasvet.viewmodel.VetViewModelFactory
@@ -162,8 +164,26 @@ fun NavVet(app: VetApp) {
                         )
                         FormularioMascotaScreen(vm, esNueva = id == 0, onTerminar = { nav.popBackStack() })
                     }
-                    // TODO (Paso 9): pedir cita
-                    composable(Rutas.PEDIR_CITA) { PantallaPendiente("Pedir cita", onVolver = { nav.popBackStack() }) }
+                    composable(
+                        Rutas.PEDIR_CITA,
+                        arguments = listOf(navArgument("mascotaId") { type = NavType.IntType; defaultValue = 0 })
+                    ) { e ->
+                        val mascotaId = e.arguments?.getInt("mascotaId") ?: 0
+                        val vm: PedirCitaViewModel = viewModel(
+                            factory = VetViewModelFactory { PedirCitaViewModel(app.repository, usuarioId, mascotaId) }
+                        )
+                        PedirCitaScreen(
+                            vm = vm,
+                            onVolver = { nav.popBackStack() },
+                            // Vuelve a Mis citas con la nueva cita como PENDIENTE
+                            onCreada = {
+                                nav.navigate(Rutas.MIS_CITAS) {
+                                    popUpTo(Rutas.INICIO)
+                                    launchSingleTop = true
+                                }
+                            }
+                        )
+                    }
                     // TODO (Paso 10): mis citas
                     composable(Rutas.MIS_CITAS) { PantallaPendiente("Mis citas") }
                     // TODO (Paso 13): perfil completo
@@ -210,9 +230,8 @@ private fun BarraNavegacion(nav: NavHostController, items: List<ItemBarra>, ruta
 // Cambia de pestaña sin apilar pantallas repetidas
 private fun irATab(nav: NavHostController, ruta: String, raiz: String = Rutas.INICIO) {
     nav.navigate(ruta) {
-        popUpTo(raiz) { saveState = true }
+        popUpTo(raiz)
         launchSingleTop = true
-        restoreState = true
     }
 }
 
