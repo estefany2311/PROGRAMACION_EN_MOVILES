@@ -8,10 +8,14 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -51,7 +55,11 @@ import com.tecsup.huellitasvet.ui.dueno.PedirCitaScreen
 import com.tecsup.huellitasvet.ui.dueno.PerfilScreen
 import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
+import com.tecsup.huellitasvet.ui.veterinario.AgendaScreen
+import com.tecsup.huellitasvet.ui.veterinario.PanelScreen
 import com.tecsup.huellitasvet.ui.veterinario.ServiciosScreen
+import com.tecsup.huellitasvet.viewmodel.AgendaViewModel
+import com.tecsup.huellitasvet.viewmodel.PanelViewModel
 import com.tecsup.huellitasvet.viewmodel.InicioViewModel
 import com.tecsup.huellitasvet.viewmodel.MascotaViewModel
 import com.tecsup.huellitasvet.viewmodel.MisCitasViewModel
@@ -67,6 +75,14 @@ private val barraDueno = listOf(
     ItemBarra(Rutas.MASCOTAS, "Mascotas", Icons.Filled.Pets),
     ItemBarra(Rutas.MIS_CITAS, "Citas", Icons.Filled.CalendarMonth),
     ItemBarra(Rutas.PERFIL, "Perfil", Icons.Filled.Person)
+)
+
+private val barraVet = listOf(
+    ItemBarra(Rutas.PANEL, "Panel", Icons.Filled.BarChart),
+    ItemBarra(Rutas.AGENDA, "Agenda", Icons.Filled.Event),
+    ItemBarra(Rutas.PACIENTES, "Pacientes", Icons.Filled.Pets),
+    ItemBarra(Rutas.SERVICIOS, "Servicios", Icons.Filled.MedicalServices),
+    ItemBarra(Rutas.AJUSTES, "Ajustes", Icons.Filled.Settings)
 )
 
 // Grafo de navegacion de la app
@@ -85,7 +101,11 @@ fun NavVet(app: VetApp) {
 
     val entrada by nav.currentBackStackEntryAsState()
     val rutaActual = entrada?.destination?.route
-    val barra = if (barraDueno.any { it.ruta == rutaActual }) barraDueno else null
+    val barra = when {
+        barraDueno.any { it.ruta == rutaActual } -> barraDueno
+        barraVet.any { it.ruta == rutaActual } -> barraVet
+        else -> null
+    }
 
     VetTheme(rolTema, oscuro) {
         Scaffold(
@@ -203,12 +223,23 @@ fun NavVet(app: VetApp) {
                 // ---------- Grafo del veterinario ----------
                 navigation(startDestination = Rutas.PANEL, route = Rutas.GRAFO_VET) {
                     composable(Rutas.PANEL) {
-                        // TODO (Paso 11): PanelScreen
-                        PantallaTemporal(usuario, onCerrarSesion = { cerrarSesion(nav, sesion) })
+                        val vm: PanelViewModel = viewModel(factory = VetViewModelFactory { PanelViewModel(app.repository) })
+                        PanelScreen(vm, onVerPendientes = { irATab(nav, Rutas.AGENDA, Rutas.PANEL) })
                     }
+                    composable(Rutas.AGENDA) {
+                        val vm: AgendaViewModel = viewModel(factory = VetViewModelFactory { AgendaViewModel(app.repository) })
+                        AgendaScreen(vm, onAtender = { nav.navigate(Rutas.atenderCita(it)) })
+                    }
+                    // TODO (Paso 12): atender cita y pacientes
+                    composable(Rutas.ATENDER_CITA) { PantallaPendiente("Atender cita", onVolver = { nav.popBackStack() }) }
+                    composable(Rutas.PACIENTES) { PantallaPendiente("Pacientes") }
                     composable(Rutas.SERVICIOS) {
                         val vm: ServiciosViewModel = viewModel(factory = VetViewModelFactory { ServiciosViewModel(app.repository) })
                         ServiciosScreen(vm, onEditar = { /* TODO (Paso 13): formulario de servicio */ })
+                    }
+                    // TODO (Paso 13): AjustesScreen
+                    composable(Rutas.AJUSTES) {
+                        PantallaTemporal(usuario, onCerrarSesion = { cerrarSesion(nav, sesion) })
                     }
                 }
             }
