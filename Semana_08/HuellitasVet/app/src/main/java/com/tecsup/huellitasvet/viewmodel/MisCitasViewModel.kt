@@ -57,10 +57,17 @@ class MisCitasViewModel(
 
     fun cancelar(c: CitaConDetalle) {
         if (!puedeCancelar(c)) {
-            _mensaje.value = "Ya no puedes cancelar esta cita"
+            _mensaje.value = "Ya no puedes cancelar esta cita. Solo se puede cancelar hasta 2 horas antes."
             return
         }
         viewModelScope.launch { repo.cambiarEstadoCita(c.cita.id, EstadoCita.CANCELADA) }
+    }
+
+    // Reprogramar usa la misma regla: PENDIENTE o CONFIRMADA y mas de 2 horas antes
+    fun puedeReprogramar(c: CitaConDetalle): Boolean = puedeCancelar(c)
+
+    fun avisarNoReprogramable() {
+        _mensaje.value = "Ya no puedes reprogramar esta cita. Solo se puede cambiar hasta 2 horas antes."
     }
 
     fun limpiarMensaje() { _mensaje.value = null }

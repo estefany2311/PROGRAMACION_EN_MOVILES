@@ -46,7 +46,7 @@ import com.tecsup.huellitasvet.ui.theme.Rojo
 import com.tecsup.huellitasvet.viewmodel.MisCitasViewModel
 
 @Composable
-fun MisCitasScreen(vm: MisCitasViewModel, onPedirCita: () -> Unit) {
+fun MisCitasScreen(vm: MisCitasViewModel, onPedirCita: () -> Unit, onReprogramar: (Int) -> Unit) {
     val proximas by vm.proximas.collectAsStateWithLifecycle()
     val historial by vm.historial.collectAsStateWithLifecycle()
     val mensaje by vm.mensaje.collectAsStateWithLifecycle()
@@ -98,10 +98,15 @@ fun MisCitasScreen(vm: MisCitasViewModel, onPedirCita: () -> Unit) {
                         lider = { IconoServicio(c.servicio.icono) },
                         accion = if (pestana == 0 && activa) {
                             {
-                                TextButton(onClick = {
-                                    // La regla la decide el ViewModel
-                                    if (vm.puedeCancelar(c)) aCancelar = c else vm.cancelar(c)
-                                }) { Text("Cancelar", color = Rojo) }
+                                // Las reglas las decide el ViewModel
+                                Column(horizontalAlignment = Alignment.End) {
+                                    TextButton(onClick = {
+                                        if (vm.puedeReprogramar(c)) onReprogramar(c.cita.id) else vm.avisarNoReprogramable()
+                                    }) { Text("Reprogramar", color = MaterialTheme.colorScheme.primary) }
+                                    TextButton(onClick = {
+                                        if (vm.puedeCancelar(c)) aCancelar = c else vm.cancelar(c)
+                                    }) { Text("Cancelar", color = Rojo) }
+                                }
                             }
                         } else null
                     )
@@ -126,8 +131,8 @@ fun MisCitasScreen(vm: MisCitasViewModel, onPedirCita: () -> Unit) {
     if (mensaje != null) {
         AlertDialog(
             onDismissRequest = vm::limpiarMensaje,
-            title = { Text("No se puede cancelar") },
-            text = { Text("${mensaje!!}. Solo se puede cancelar hasta 2 horas antes.") },
+            title = { Text("Fuera de plazo") },
+            text = { Text(mensaje!!) },
             confirmButton = { TextButton(onClick = vm::limpiarMensaje) { Text("Entendido") } }
         )
     }
@@ -143,6 +148,6 @@ private fun AvisoCancelacion() {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(Icons.Outlined.Info, null, tint = Ambar, modifier = Modifier.size(18.dp))
-        Text("  Puedes cancelar hasta 2 horas antes", style = MaterialTheme.typography.bodySmall, color = Ambar)
+        Text("  Puedes reprogramar o cancelar hasta 2 horas antes", style = MaterialTheme.typography.bodySmall, color = Ambar)
     }
 }

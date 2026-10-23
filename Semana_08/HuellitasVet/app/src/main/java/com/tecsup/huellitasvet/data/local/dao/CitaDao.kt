@@ -30,6 +30,10 @@ interface CitaDao {
     @Query("SELECT * FROM citas WHERE id = :id")
     suspend fun obtener(id: Int): Cita?
 
+    // Reprogramar: nueva fecha y hora; la cita vuelve a PENDIENTE para que el veterinario la confirme
+    @Query("UPDATE citas SET fecha = :fecha, hora = :hora, estado = 'PENDIENTE' WHERE id = :id")
+    suspend fun reprogramar(id: Int, fecha: String, hora: String)
+
     // ---------- Horarios ----------
     @Query("SELECT COUNT(*) FROM citas WHERE fecha = :fecha AND hora = :hora AND estado != 'CANCELADA'")
     suspend fun contarOcupadas(fecha: String, hora: String): Int

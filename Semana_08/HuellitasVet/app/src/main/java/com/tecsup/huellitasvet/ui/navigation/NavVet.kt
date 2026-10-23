@@ -45,6 +45,7 @@ import com.tecsup.huellitasvet.ui.dueno.MascotasScreen
 import com.tecsup.huellitasvet.ui.dueno.MisCitasScreen
 import com.tecsup.huellitasvet.ui.dueno.PedirCitaScreen
 import com.tecsup.huellitasvet.ui.dueno.PerfilScreen
+import com.tecsup.huellitasvet.ui.dueno.ReprogramarCitaScreen
 import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.ui.veterinario.AgendaScreen
@@ -62,6 +63,7 @@ import com.tecsup.huellitasvet.viewmodel.InicioViewModel
 import com.tecsup.huellitasvet.viewmodel.MascotaViewModel
 import com.tecsup.huellitasvet.viewmodel.MisCitasViewModel
 import com.tecsup.huellitasvet.viewmodel.PedirCitaViewModel
+import com.tecsup.huellitasvet.viewmodel.ReprogramarCitaViewModel
 import com.tecsup.huellitasvet.viewmodel.ServiciosViewModel
 import com.tecsup.huellitasvet.viewmodel.SesionViewModel
 import com.tecsup.huellitasvet.viewmodel.VetViewModelFactory
@@ -222,7 +224,21 @@ fun NavVet(app: VetApp) {
                             key = "miscitas-$usuarioId",
                             factory = VetViewModelFactory { MisCitasViewModel(app.repository, usuarioId) }
                         )
-                        MisCitasScreen(vm, onPedirCita = { nav.navigate(Rutas.pedirCita()) })
+                        MisCitasScreen(
+                            vm,
+                            onPedirCita = { nav.navigate(Rutas.pedirCita()) },
+                            onReprogramar = { nav.navigate(Rutas.reprogramarCita(it)) }
+                        )
+                    }
+                    composable(
+                        Rutas.REPROGRAMAR_CITA,
+                        arguments = listOf(navArgument("citaId") { type = NavType.IntType })
+                    ) { e ->
+                        val citaId = e.arguments?.getInt("citaId") ?: 0
+                        val vm: ReprogramarCitaViewModel = viewModel(
+                            factory = VetViewModelFactory { ReprogramarCitaViewModel(app.repository, citaId) }
+                        )
+                        ReprogramarCitaScreen(vm, onTerminar = { nav.popBackStack() })
                     }
                     composable(Rutas.PERFIL) {
                         val inicio: InicioViewModel = viewModel(
