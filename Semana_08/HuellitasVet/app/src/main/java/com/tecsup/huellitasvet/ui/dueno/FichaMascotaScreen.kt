@@ -39,6 +39,8 @@ import com.tecsup.huellitasvet.ui.components.AppTopBar
 import com.tecsup.huellitasvet.ui.components.HistorialItem
 import com.tecsup.huellitasvet.ui.components.MascotaAvatar
 import com.tecsup.huellitasvet.ui.components.VetButton
+import com.tecsup.huellitasvet.ui.components.graficos.DatoGrafico
+import com.tecsup.huellitasvet.ui.components.graficos.GraficoLineas
 import com.tecsup.huellitasvet.ui.theme.Rojo
 import com.tecsup.huellitasvet.viewmodel.MascotaViewModel
 
@@ -54,6 +56,7 @@ fun FichaMascotaScreen(
 ) {
     val mascota by vm.mascota.collectAsStateWithLifecycle()
     val historial by vm.historial(mascotaId).collectAsStateWithLifecycle()
+    val pesos by vm.pesos(mascotaId).collectAsStateWithLifecycle()
     val mensaje by vm.mensaje.collectAsStateWithLifecycle()
     val terminado by vm.terminado.collectAsStateWithLifecycle()
     var pestana by rememberSaveable { mutableIntStateOf(0) }
@@ -102,6 +105,8 @@ fun FichaMascotaScreen(
                     )
                 }
             } else {
+                // Evolucion del peso registrado en cada atencion
+                item { TarjetaPeso(m.nombre, pesos) }
                 itemsIndexed(historial, key = { _, c -> c.cita.id }) { i, c ->
                     HistorialItem(
                         fecha = Horarios.diaMes(c.cita.fecha),
@@ -137,6 +142,35 @@ fun FichaMascotaScreen(
             text = { Text(mensaje!!) },
             confirmButton = { TextButton(onClick = vm::limpiarMensaje) { Text("Entendido") } }
         )
+    }
+}
+
+@Composable
+private fun TarjetaPeso(nombre: String, pesos: List<DatoGrafico>) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(1.dp),
+        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text("Evolución del peso", style = MaterialTheme.typography.titleSmall)
+            Text(
+                "Peso registrado en cada atención (kg)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(12.dp))
+            if (pesos.size < 2) {
+                Text(
+                    "Se necesitan al menos 2 atenciones con peso para ver la evolución de $nombre",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                GraficoLineas(pesos)
+            }
+        }
     }
 }
 

@@ -1,18 +1,22 @@
 package com.tecsup.huellitasvet.viewmodel
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tecsup.huellitasvet.data.local.entity.Mascota
 import com.tecsup.huellitasvet.data.local.relation.CitaConDetalle
 import com.tecsup.huellitasvet.data.repository.VetRepository
 import com.tecsup.huellitasvet.model.Especie
+import com.tecsup.huellitasvet.model.Horarios
 import com.tecsup.huellitasvet.model.Sexo
+import com.tecsup.huellitasvet.ui.components.graficos.DatoGrafico
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -66,6 +70,7 @@ class MascotaViewModel(
     val terminado: StateFlow<Boolean> = _terminado.asStateFlow()
 
     private val historiales = mutableMapOf<Int, StateFlow<List<CitaConDetalle>>>()
+    private val pesosPorMascota = mutableMapOf<Int, StateFlow<List<DatoGrafico>>>()
 
     init {
         // Al editar se llena el formulario con los datos actuales
@@ -90,6 +95,13 @@ class MascotaViewModel(
     // Historial clinico: citas ATENDIDAS de la mascota, la mas reciente primero
     fun historial(mascotaId: Int): StateFlow<List<CitaConDetalle>> = historiales.getOrPut(mascotaId) {
         repo.observarHistorial(mascotaId)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }
+
+    // Peso registrado en cada atencion, convertido al formato del grafico (etiqueta = "14 oct")
+    fun pesos(mascotaId: Int): StateFlow<List<DatoGrafico>> = pesosPorMascota.getOrPut(mascotaId) {
+        repo.observarPesos(mascotaId)
+            .map { puntos -> puntos.map { DatoGrafico(Horarios.diaMes(it.fecha), it.peso.toFloat(), Color.Unspecified) } }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     }
 
