@@ -1,11 +1,15 @@
 package com.tecsup.huellitasvet.ui.theme
 
+import android.app.Activity
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import com.tecsup.huellitasvet.model.Rol
 
 private val DuenoClaro = lightColorScheme(
@@ -88,6 +92,17 @@ fun VetTheme(
     oscuro: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    // Iconos de la barra de estado oscuros sobre fondo claro (y al reves en modo oscuro)
+    val vista = LocalView.current
+    if (!vista.isInEditMode) {
+        SideEffect {
+            val ventana = (vista.context as? Activity)?.window ?: return@SideEffect
+            WindowCompat.getInsetsController(ventana, vista).apply {
+                isAppearanceLightStatusBars = !oscuro
+                isAppearanceLightNavigationBars = !oscuro
+            }
+        }
+    }
     MaterialTheme(
         colorScheme = esquemaPara(rol, oscuro),
         typography = Typography,
