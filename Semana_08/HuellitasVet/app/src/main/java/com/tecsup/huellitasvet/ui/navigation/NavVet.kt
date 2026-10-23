@@ -29,16 +29,20 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
+import androidx.navigation.navArgument
 import androidx.navigation.compose.rememberNavController
 import com.tecsup.huellitasvet.VetApp
 import com.tecsup.huellitasvet.data.local.entity.Usuario
 import com.tecsup.huellitasvet.model.Rol
 import com.tecsup.huellitasvet.ui.components.AppTopBar
 import com.tecsup.huellitasvet.ui.components.VetButton
+import com.tecsup.huellitasvet.ui.dueno.FichaMascotaScreen
+import com.tecsup.huellitasvet.ui.dueno.FormularioMascotaScreen
 import com.tecsup.huellitasvet.ui.dueno.InicioScreen
 import com.tecsup.huellitasvet.ui.dueno.LoginScreen
 import com.tecsup.huellitasvet.ui.dueno.MascotasScreen
@@ -46,6 +50,7 @@ import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.ui.veterinario.ServiciosScreen
 import com.tecsup.huellitasvet.viewmodel.InicioViewModel
+import com.tecsup.huellitasvet.viewmodel.MascotaViewModel
 import com.tecsup.huellitasvet.viewmodel.ServiciosViewModel
 import com.tecsup.huellitasvet.viewmodel.SesionViewModel
 import com.tecsup.huellitasvet.viewmodel.VetViewModelFactory
@@ -131,9 +136,32 @@ fun NavVet(app: VetApp) {
                             onAgregar = { nav.navigate(Rutas.formMascota()) }
                         )
                     }
-                    // TODO (Paso 8): ficha y formulario de mascota
-                    composable(Rutas.FICHA_MASCOTA) { PantallaPendiente("Ficha de la mascota", onVolver = { nav.popBackStack() }) }
-                    composable(Rutas.FORM_MASCOTA) { PantallaPendiente("Registrar mascota", onVolver = { nav.popBackStack() }) }
+                    composable(
+                        Rutas.FICHA_MASCOTA,
+                        arguments = listOf(navArgument("id") { type = NavType.IntType })
+                    ) { e ->
+                        val id = e.arguments?.getInt("id") ?: 0
+                        val vm: MascotaViewModel = viewModel(
+                            factory = VetViewModelFactory { MascotaViewModel(app.repository, usuarioId, id) }
+                        )
+                        FichaMascotaScreen(
+                            vm = vm,
+                            mascotaId = id,
+                            onVolver = { nav.popBackStack() },
+                            onPedirCita = { nav.navigate(Rutas.pedirCita(it)) },
+                            onEditar = { nav.navigate(Rutas.formMascota(it)) }
+                        )
+                    }
+                    composable(
+                        Rutas.FORM_MASCOTA,
+                        arguments = listOf(navArgument("id") { type = NavType.IntType; defaultValue = 0 })
+                    ) { e ->
+                        val id = e.arguments?.getInt("id") ?: 0
+                        val vm: MascotaViewModel = viewModel(
+                            factory = VetViewModelFactory { MascotaViewModel(app.repository, usuarioId, id) }
+                        )
+                        FormularioMascotaScreen(vm, esNueva = id == 0, onTerminar = { nav.popBackStack() })
+                    }
                     // TODO (Paso 9): pedir cita
                     composable(Rutas.PEDIR_CITA) { PantallaPendiente("Pedir cita", onVolver = { nav.popBackStack() }) }
                     // TODO (Paso 10): mis citas
