@@ -1,13 +1,13 @@
 package com.tecsup.huellitasvet.ui.dueno
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,12 +19,14 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.tecsup.huellitasvet.model.Especie
-import com.tecsup.huellitasvet.ui.components.MascotaAvatar
+import com.tecsup.huellitasvet.R
 import com.tecsup.huellitasvet.ui.components.VetButton
 
 // Pantalla de bienvenida
@@ -50,13 +52,15 @@ fun SplashScreen(onComenzar: () -> Unit, onTengoCuenta: () -> Unit) {
         Text("HuellitasVet", style = MaterialTheme.typography.headlineMedium, color = cs.onPrimaryContainer)
         Text("Cuidamos a tu mejor amigo", style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant)
         Spacer(Modifier.height(40.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            Especie.entries.forEach { e ->
-                Box(
-                    Modifier.background(cs.surface.copy(alpha = 0.7f), RoundedCornerShape(18.dp)).padding(6.dp)
-                ) { MascotaAvatar(e, tamano = 60.dp) }
-            }
-        }
+        Image(
+            painter = painterResource(id = R.drawable.perro_gato),
+            contentDescription = "Perro y gato",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+                .clip(RoundedCornerShape(24.dp))
+        )
         Spacer(Modifier.weight(1.4f))
         VetButton("Comenzar", onClick = onComenzar)
         TextButton(onClick = onTengoCuenta) { Text("Ya tengo una cuenta", color = cs.primary) }
