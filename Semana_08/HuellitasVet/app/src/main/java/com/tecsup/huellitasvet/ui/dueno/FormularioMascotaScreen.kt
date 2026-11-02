@@ -19,6 +19,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -27,12 +30,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tecsup.huellitasvet.model.Especie
+import com.tecsup.huellitasvet.model.Razas
 import com.tecsup.huellitasvet.model.Sexo
 import com.tecsup.huellitasvet.ui.components.AppTopBar
 import com.tecsup.huellitasvet.ui.components.MascotaAvatar
@@ -80,7 +87,10 @@ fun FormularioMascotaScreen(vm: MascotaViewModel, esNueva: Boolean, onTerminar: 
             ErrorCampo(errores.especie)
             Spacer(Modifier.height(8.dp))
 
-            VetTextField(form.raza, vm::cambiarRaza, "Raza")
+            Etiqueta("Raza")
+            SelectorRaza(form.especie, form.raza, vm::cambiarRaza)
+            ErrorCampo(errores.raza)
+            Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 VetTextField(
                     form.anio, vm::cambiarAnio, "Año de nacimiento",
@@ -123,6 +133,52 @@ private fun ErrorCampo(error: String?) {
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(start = 16.dp, top = 4.dp)
         )
+    }
+}
+
+// Lista desplegable de razas segun la especie. Sin especie elegida queda bloqueada
+@Composable
+private fun SelectorRaza(especie: Especie?, raza: String, onElegir: (String) -> Unit) {
+    val cs = MaterialTheme.colorScheme
+    var abierto by remember { mutableStateOf(false) }
+    val opciones = especie?.let { Razas.de(it) } ?: emptyList()
+    Box(Modifier.fillMaxWidth()) {
+        Surface(
+            onClick = { abierto = true },
+            enabled = especie != null,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            color = cs.surface,
+            border = BorderStroke(1.dp, cs.outline)
+        ) {
+            Row(
+                Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = when {
+                        especie == null -> "Primero elige la especie"
+                        raza.isBlank() -> "Elige la raza"
+                        else -> raza
+                    },
+                    color = if (especie == null || raza.isBlank()) cs.onSurfaceVariant else cs.onSurface,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(Icons.Filled.ArrowDropDown, contentDescription = null, tint = cs.onSurfaceVariant)
+            }
+        }
+        DropdownMenu(expanded = abierto, onDismissRequest = { abierto = false }) {
+            opciones.forEach { opcion ->
+                DropdownMenuItem(
+                    text = { Text(opcion) },
+                    onClick = {
+                        onElegir(opcion)
+                        abierto = false
+                    }
+                )
+            }
+        }
     }
 }
 

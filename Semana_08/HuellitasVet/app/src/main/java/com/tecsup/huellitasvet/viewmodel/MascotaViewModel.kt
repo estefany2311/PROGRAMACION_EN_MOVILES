@@ -38,11 +38,12 @@ data class FormMascota(
 data class ErroresMascota(
     val nombre: String? = null,
     val especie: String? = null,
+    val raza: String? = null,
     val sexo: String? = null,
     val anio: String? = null,
     val peso: String? = null
 ) {
-    val hayErrores: Boolean get() = listOf(nombre, especie, sexo, anio, peso).any { it != null }
+    val hayErrores: Boolean get() = listOf(nombre, especie, raza, sexo, anio, peso).any { it != null }
 }
 
 // Registrar / editar mascota, su ficha y su historial clinico
@@ -107,8 +108,12 @@ class MascotaViewModel(
 
     // Cada cambio limpia el error de su campo
     fun cambiarNombre(v: String) { _form.update { it.copy(nombre = v) }; _errores.update { it.copy(nombre = null) } }
-    fun cambiarEspecie(v: Especie) { _form.update { it.copy(especie = v) }; _errores.update { it.copy(especie = null) } }
-    fun cambiarRaza(v: String) { _form.update { it.copy(raza = v) } }
+    // Al cambiar de especie se borra la raza, para no dejar "Persa" en un perro
+    fun cambiarEspecie(v: Especie) {
+        _form.update { if (it.especie == v) it else it.copy(especie = v, raza = "") }
+        _errores.update { it.copy(especie = null) }
+    }
+    fun cambiarRaza(v: String) { _form.update { it.copy(raza = v) }; _errores.update { it.copy(raza = null) } }
     fun cambiarAnio(v: String) { _form.update { it.copy(anio = v.filter(Char::isDigit).take(4)) }; _errores.update { it.copy(anio = null) } }
     fun cambiarPeso(v: String) { _form.update { it.copy(peso = v) }; _errores.update { it.copy(peso = null) } }
     fun cambiarSexo(v: Sexo) { _form.update { it.copy(sexo = v) }; _errores.update { it.copy(sexo = null) } }
@@ -121,6 +126,7 @@ class MascotaViewModel(
         val errores = ErroresMascota(
             nombre = if (f.nombre.trim().length < 2) "El nombre debe tener al menos 2 caracteres" else null,
             especie = if (f.especie == null) "Elige la especie" else null,
+            raza = if (f.raza.isBlank()) "Elige la raza" else null,
             sexo = if (f.sexo == null) "Elige el sexo" else null,
             anio = if (anio == null || anio !in 1990..actual) "El año debe estar entre 1990 y $actual" else null,
             peso = if (peso == null || peso <= 0.0) "El peso debe ser mayor que 0" else null
@@ -135,7 +141,7 @@ class MascotaViewModel(
                     duenoId = f.duenoId,
                     nombre = f.nombre.trim(),
                     especie = f.especie!!.name,
-                    raza = f.raza.trim().ifBlank { "Sin especificar" },
+                    raza = f.raza,
                     anioNacimiento = anio!!,
                     peso = peso!!,
                     sexo = f.sexo!!.name
