@@ -51,9 +51,14 @@ class SesionViewModel(
         }
     }
 
-    fun login(correo: String, clave: String, rolSeleccionado: Rol) {
+    // El codigo solo se pide en la pestaña Administrador
+    fun login(correo: String, clave: String, rolSeleccionado: Rol, codigo: String = "") {
         if (correo.isBlank() || clave.isBlank()) {
             _error.value = "Ingresa tu correo y tu contraseña"
+            return
+        }
+        if (rolSeleccionado == Rol.ADMINISTRADOR) {
+            loginAdministrador(correo, clave, codigo)
             return
         }
         viewModelScope.launch {
@@ -69,6 +74,24 @@ class SesionViewModel(
                     prefs.guardarSesion(usuario.rol, usuario.id)
                     _usuarioActual.value = usuario
                 }
+            }
+        }
+    }
+
+    // Regla: el administrador entra con correo, contraseña y su codigo de administrador
+    private fun loginAdministrador(correo: String, clave: String, codigo: String) {
+        if (codigo.isBlank()) {
+            _error.value = "Ingresa tu código de administrador"
+            return
+        }
+        viewModelScope.launch {
+            val usuario = repo.loginAdministrador(correo.trim(), clave, codigo.trim())
+            if (usuario == null) {
+                _error.value = "Correo, contraseña o código de administrador incorrectos"
+            } else {
+                _error.value = null
+                prefs.guardarSesion(usuario.rol, usuario.id)
+                _usuarioActual.value = usuario
             }
         }
     }

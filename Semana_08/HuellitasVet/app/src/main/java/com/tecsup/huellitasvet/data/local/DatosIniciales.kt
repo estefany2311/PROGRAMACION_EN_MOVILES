@@ -34,7 +34,9 @@ object DatosIniciales {
     private fun usuarios() = listOf(
         Usuario(1, "Karla Chavez Lazo", "karla@correo.test", "1234", Rol.CLIENTE.name),
         Usuario(2, "Luis Ramírez", "luis@correo.test", "1234", Rol.CLIENTE.name),
-        Usuario(3, "Dra. Valeria Rojas", "vet@huellitas.test", "admin", Rol.ADMIN.name)
+        Usuario(3, "Dra. Valeria Rojas", "vet@huellitas.test", "admin", Rol.ADMIN.name),
+        Usuario(4, "Ana", "admin@huellitas.test", "admin123", Rol.ADMINISTRADOR.name,
+            apellido = "Torres", codigo = "ADM-001")
     )
 
     private fun mascotas(): List<Mascota> {

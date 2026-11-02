@@ -4,6 +4,7 @@ package com.tecsup.huellitasvet.ui.navigation
 object Rutas {
     const val SPLASH = "splash"
     const val LOGIN = "login"
+    const val REGISTRO_ADMIN = "registro_admin"
 
     // Grafo del dueño
     const val GRAFO_DUENO = "grafo_dueno"
@@ -26,6 +27,10 @@ object Rutas {
     const val SERVICIOS = "servicios"
     const val FORM_SERVICIO = "servicio/form?id={id}"
     const val AJUSTES = "ajustes"
+
+    // Grafo del administrador
+    const val GRAFO_ADMIN = "grafo_admin"
+    const val ADMIN_INICIO = "admin_inicio"
 
     fun formMascota(id: Int = 0) = "mascota/form?id=$id"
     fun fichaMascota(id: Int) = "mascota/$id"

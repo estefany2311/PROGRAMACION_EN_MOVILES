@@ -30,6 +30,30 @@ class VetRepositoryRoom(private val db: VetDatabase) : VetRepository {
 
     override suspend fun primerUsuarioConRol(rol: Rol): Usuario? = usuarioDao.primeroConRol(rol.name)
 
+    // Administrador
+    override suspend fun loginAdministrador(correo: String, clave: String, codigo: String): Usuario? =
+        usuarioDao.loginAdministrador(correo, clave, codigo)
+
+    override suspend fun registrarAdministrador(nombre: String, apellido: String, correo: String,
+                                                codigo: String, clave: String) {
+        usuarioDao.insertar(
+            Usuario(
+                nombre = nombre,
+                correo = correo,
+                clave = clave,
+                rol = Rol.ADMINISTRADOR.name,
+                apellido = apellido,
+                codigo = codigo
+            )
+        )
+    }
+
+    override suspend fun correoExiste(correo: String): Boolean = usuarioDao.correoExiste(correo)
+
+    override suspend fun codigoExiste(codigo: String): Boolean = usuarioDao.codigoExiste(codigo)
+
+    override fun observarUsuarios(): Flow<List<Usuario>> = usuarioDao.observarTodos()
+
     // Servicios (ejemplo resuelto)
     override fun observarServicios(): Flow<List<Servicio>> = servicioDao.observarTodos()
 

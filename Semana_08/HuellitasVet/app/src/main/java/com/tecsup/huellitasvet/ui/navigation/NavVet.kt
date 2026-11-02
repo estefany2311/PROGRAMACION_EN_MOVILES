@@ -37,6 +37,8 @@ import androidx.navigation.compose.rememberNavController
 import com.tecsup.huellitasvet.VetApp
 import com.tecsup.huellitasvet.data.local.entity.Usuario
 import com.tecsup.huellitasvet.model.Rol
+import com.tecsup.huellitasvet.ui.administrador.AdminScreen
+import com.tecsup.huellitasvet.ui.administrador.RegistroAdminScreen
 import com.tecsup.huellitasvet.ui.dueno.FichaMascotaScreen
 import com.tecsup.huellitasvet.ui.dueno.FormularioMascotaScreen
 import com.tecsup.huellitasvet.ui.dueno.InicioScreen
@@ -55,6 +57,7 @@ import com.tecsup.huellitasvet.ui.veterinario.FormularioServicioScreen
 import com.tecsup.huellitasvet.ui.veterinario.PacientesScreen
 import com.tecsup.huellitasvet.ui.veterinario.PanelScreen
 import com.tecsup.huellitasvet.ui.veterinario.ServiciosScreen
+import com.tecsup.huellitasvet.viewmodel.AdminViewModel
 import com.tecsup.huellitasvet.viewmodel.AgendaViewModel
 import com.tecsup.huellitasvet.viewmodel.AtenderCitaViewModel
 import com.tecsup.huellitasvet.viewmodel.PacientesViewModel
@@ -63,6 +66,7 @@ import com.tecsup.huellitasvet.viewmodel.InicioViewModel
 import com.tecsup.huellitasvet.viewmodel.MascotaViewModel
 import com.tecsup.huellitasvet.viewmodel.MisCitasViewModel
 import com.tecsup.huellitasvet.viewmodel.PedirCitaViewModel
+import com.tecsup.huellitasvet.viewmodel.RegistroAdminViewModel
 import com.tecsup.huellitasvet.viewmodel.ReprogramarCitaViewModel
 import com.tecsup.huellitasvet.viewmodel.ServiciosViewModel
 import com.tecsup.huellitasvet.viewmodel.SesionViewModel
@@ -98,7 +102,8 @@ fun NavVet(app: VetApp) {
     val oscuro by sesion.modoOscuro.collectAsStateWithLifecycle()
     val notificaciones by sesion.notificaciones.collectAsStateWithLifecycle()
     val aceptarCitas by sesion.aceptarCitas.collectAsStateWithLifecycle()
-    val rolTema = if (usuario?.rol == Rol.ADMIN.name) Rol.ADMIN else Rol.CLIENTE
+    // Color de la app segun el rol de la sesion (sin sesion: el del dueño)
+    val rolTema = Rol.entries.firstOrNull { it.name == usuario?.rol } ?: Rol.CLIENTE
     val usuarioId = usuario?.id ?: 0
 
     val entrada by nav.currentBackStackEntryAsState()
@@ -113,8 +118,9 @@ fun NavVet(app: VetApp) {
     LaunchedEffect(usuario) {
         val u = usuario ?: return@LaunchedEffect
         val grafoActual = nav.currentBackStackEntry?.destination?.parent?.route
-        val esperado = if (u.rol == Rol.ADMIN.name) Rutas.GRAFO_VET else Rutas.GRAFO_DUENO
-        if ((grafoActual == Rutas.GRAFO_DUENO || grafoActual == Rutas.GRAFO_VET) && grafoActual != esperado) {
+        val esperado = grafoDe(u)
+        val enUnGrafo = grafoActual == Rutas.GRAFO_DUENO || grafoActual == Rutas.GRAFO_VET || grafoActual == Rutas.GRAFO_ADMIN
+        if (enUnGrafo && grafoActual != esperado) {
             irAGrafo(nav, u)
         }
     }
@@ -143,7 +149,27 @@ fun NavVet(app: VetApp) {
                     }
                 }
                 composable(Rutas.LOGIN) {
-                    LoginScreen(sesion, onExito = { irAGrafo(nav, it) })
+                    LoginScreen(
+                        sesion,
+                        onExito = { irAGrafo(nav, it) },
+                        onRegistrarAdmin = { nav.navigate(Rutas.REGISTRO_ADMIN) }
+                    )
+                }
+                composable(Rutas.REGISTRO_ADMIN) {
+                    val vm: RegistroAdminViewModel = viewModel(
+                        factory = VetViewModelFactory { RegistroAdminViewModel(app.repository) }
+                    )
+                    VetTheme(Rol.ADMINISTRADOR, oscuro) {
+                        RegistroAdminScreen(vm, onTerminar = { nav.popBackStack() })
+                    }
+                }
+
+                // ---------- Grafo del administrador ----------
+                navigation(startDestination = Rutas.ADMIN_INICIO, route = Rutas.GRAFO_ADMIN) {
+                    composable(Rutas.ADMIN_INICIO) {
+                        val vm: AdminViewModel = viewModel(factory = VetViewModelFactory { AdminViewModel(app.repository) })
+                        AdminScreen(vm, usuario = usuario, onCerrarSesion = { cerrarSesion(nav, sesion) })
+                    }
                 }
 
                 // ---------- Grafo del dueño ----------
@@ -367,9 +393,16 @@ private fun irATab(nav: NavHostController, ruta: String, raiz: String = Rutas.IN
     }
 }
 
+// Cada rol tiene su propio grafo de pantallas
+private fun grafoDe(u: Usuario): String = when (u.rol) {
+    Rol.ADMIN.name -> Rutas.GRAFO_VET
+    Rol.ADMINISTRADOR.name -> Rutas.GRAFO_ADMIN
+    else -> Rutas.GRAFO_DUENO
+}
+
 // Navega al grafo del rol y limpia la pila para que "atras" no vuelva al login
 private fun irAGrafo(nav: NavHostController, u: Usuario) {
-    val destino = if (u.rol == Rol.ADMIN.name) Rutas.GRAFO_VET else Rutas.GRAFO_DUENO
+    val destino = grafoDe(u)
     nav.navigate(destino) {
         popUpTo(0) { inclusive = true }
         launchSingleTop = true

@@ -15,11 +15,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,15 +41,16 @@ import com.tecsup.huellitasvet.ui.components.VetTextField
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.viewmodel.SesionViewModel
 
-// Un solo Composable para ambos roles: el color cambia segun la pestaña elegida
+// Un solo Composable para los tres roles: el color cambia segun la pestaña elegida
 @Composable
-fun LoginScreen(vm: SesionViewModel, onExito: (Usuario) -> Unit) {
+fun LoginScreen(vm: SesionViewModel, onExito: (Usuario) -> Unit, onRegistrarAdmin: () -> Unit = {}) {
     val usuario by vm.usuarioActual.collectAsStateWithLifecycle()
     val error by vm.error.collectAsStateWithLifecycle()
     val oscuro by vm.modoOscuro.collectAsStateWithLifecycle()
     var rol by rememberSaveable { mutableStateOf(Rol.CLIENTE) }
     var correo by rememberSaveable { mutableStateOf("") }
     var clave by rememberSaveable { mutableStateOf("") }
+    var codigo by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(usuario) { usuario?.let(onExito) }
 
@@ -87,6 +90,16 @@ fun LoginScreen(vm: SesionViewModel, onExito: (Usuario) -> Unit) {
                 icono = Icons.Outlined.Lock,
                 esClave = true
             )
+            // Solo el administrador escribe su codigo
+            if (rol == Rol.ADMINISTRADOR) {
+                Spacer(Modifier.height(8.dp))
+                VetTextField(
+                    valor = codigo,
+                    onValorChange = { codigo = it; vm.limpiarError() },
+                    etiqueta = "Código de administrador",
+                    icono = Icons.Outlined.Badge
+                )
+            }
             Text(
                 "¿Olvidaste tu contraseña?",
                 style = MaterialTheme.typography.labelMedium,
@@ -107,7 +120,12 @@ fun LoginScreen(vm: SesionViewModel, onExito: (Usuario) -> Unit) {
                 Spacer(Modifier.height(12.dp))
             }
 
-            VetButton("Ingresar", onClick = { vm.login(correo, clave, rol) })
+            VetButton("Ingresar", onClick = { vm.login(correo, clave, rol, codigo) })
+            if (rol == Rol.ADMINISTRADOR) {
+                TextButton(onClick = onRegistrarAdmin, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                    Text("Crear cuenta de administrador", color = cs.primary)
+                }
+            }
             Spacer(Modifier.height(24.dp))
 
             Surface(shape = RoundedCornerShape(14.dp), color = cs.primaryContainer.copy(alpha = 0.6f)) {
@@ -124,7 +142,7 @@ fun LoginScreen(vm: SesionViewModel, onExito: (Usuario) -> Unit) {
     }
 }
 
-// Pestañas Dueño / Veterinario
+// Pestañas Dueño / Veterinario / Administrador
 @Composable
 private fun SelectorRol(seleccionado: Rol, onCambio: (Rol) -> Unit) {
     val cs = MaterialTheme.colorScheme
@@ -145,7 +163,7 @@ private fun SelectorRol(seleccionado: Rol, onCambio: (Rol) -> Unit) {
                 contentColor = if (activo) cs.onPrimary else cs.onSurfaceVariant
             ) {
                 Box(Modifier.padding(vertical = 10.dp), contentAlignment = Alignment.Center) {
-                    Text(r.etiqueta, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+                    Text(r.etiqueta, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, maxLines = 1)
                 }
             }
         }

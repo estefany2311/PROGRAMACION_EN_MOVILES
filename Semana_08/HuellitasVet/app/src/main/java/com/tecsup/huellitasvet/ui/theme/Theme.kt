@@ -12,6 +12,15 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.tecsup.huellitasvet.model.Rol
 
+// Administrador: morado
+val Morado = Color(0xFF7C3AED)
+val MoradoContenedor = Color(0xFFEDE9FE)
+val MoradoOscuro = Color(0xFF4C1D95)
+val FondoAdmin = Color(0xFFFAF8FF)
+val MoradoClaro = Color(0xFFC4B5FD)
+val FondoOscuroAdmin = Color(0xFF13111C)
+val SuperficieOscuraAdmin = Color(0xFF1F1B2E)
+
 private val DuenoClaro = lightColorScheme(
     primary = Esmeralda,
     onPrimary = Color.White,
@@ -80,9 +89,44 @@ private val VetOscuro = darkColorScheme(
     error = Color(0xFFF87171)
 )
 
+private val AdminClaro = lightColorScheme(
+    primary = Morado,
+    onPrimary = Color.White,
+    primaryContainer = MoradoContenedor,
+    onPrimaryContainer = MoradoOscuro,
+    secondary = Morado,
+    secondaryContainer = MoradoContenedor,
+    onSecondaryContainer = MoradoOscuro,
+    background = FondoAdmin,
+    surface = Color.White,
+    surfaceVariant = Color(0xFFF1EEFA),
+    onSurfaceVariant = Color(0xFF625B78),
+    outline = Color(0xFFDDD6EE),
+    outlineVariant = Color(0xFFEAE5F5),
+    error = Rojo
+)
+
+private val AdminOscuro = darkColorScheme(
+    primary = MoradoClaro,
+    onPrimary = Color(0xFF2E1065),
+    primaryContainer = MoradoOscuro,
+    onPrimaryContainer = MoradoContenedor,
+    secondary = MoradoClaro,
+    secondaryContainer = MoradoOscuro,
+    onSecondaryContainer = MoradoContenedor,
+    background = FondoOscuroAdmin,
+    surface = SuperficieOscuraAdmin,
+    surfaceVariant = Color(0xFF2B2640),
+    onSurfaceVariant = Color(0xFFC0B8D6),
+    outline = Color(0xFF443C5C),
+    outlineVariant = Color(0xFF332D47),
+    error = Color(0xFFF87171)
+)
+
 fun esquemaPara(rol: Rol, oscuro: Boolean): ColorScheme = when (rol) {
     Rol.CLIENTE -> if (oscuro) DuenoOscuro else DuenoClaro
     Rol.ADMIN -> if (oscuro) VetOscuro else VetClaro
+    Rol.ADMINISTRADOR -> if (oscuro) AdminOscuro else AdminClaro
 }
 
 // Entrega un ColorScheme segun el perfil: en las pantallas usa MaterialTheme.colorScheme
