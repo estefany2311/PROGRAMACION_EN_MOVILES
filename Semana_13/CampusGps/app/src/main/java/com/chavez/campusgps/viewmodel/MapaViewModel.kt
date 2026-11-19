@@ -3,6 +3,7 @@ package com.chavez.campusgps.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.chavez.campusgps.data.FavoritosRepository
 import com.chavez.campusgps.data.LugaresRepository
 import com.chavez.campusgps.data.UbicacionNoDisponibleException
 import com.chavez.campusgps.data.UbicacionRepository
@@ -24,7 +25,8 @@ import kotlinx.coroutines.launch
 
 class MapaViewModel(
     private val ubicacionRepo: UbicacionRepository,
-    private val lugaresRepo: LugaresRepository
+    private val lugaresRepo: LugaresRepository,
+    private val favoritosRepo: FavoritosRepository
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow<UbicacionUi>(UbicacionUi.Inicial)
@@ -46,17 +48,28 @@ class MapaViewModel(
     private val _radio = MutableStateFlow<Int?>(null)
     val radio: StateFlow<Int?> = _radio.asStateFlow()
 
-    // Lista filtrada por categoría y marcada con "dentro del radio":
-    // la usan el mapa, la lista y el "más cercano"
+    // Ids favoritos (vienen de DataStore y se actualizan solos)
+    private val favoritos: StateFlow<Set<Int>> = favoritosRepo.favoritos
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
+
+    // true = chip "Mis lugares" activo (solo favoritos)
+    private val _soloFavoritos = MutableStateFlow(false)
+    val soloFavoritos: StateFlow<Boolean> = _soloFavoritos.asStateFlow()
+
+    // Lista filtrada por categoría y favoritos, marcada con "dentro del radio", minutos a pie
+    // y favorito: la usan el mapa, la lista y el "más cercano"
     val lugares: StateFlow<List<LugarConDistancia>> =
-        combine(_lugares, _categoria, _radio) { lista, cat, radio ->
-            val filtrada = if (cat == null) lista else lista.filter { it.lugar.categoria == cat }
-            filtrada.map {
-                it.copy(
-                    dentroDelRadio = dentroDelRadio(it.metros, radio),
-                    minutosAPie = minutosAPie(it.metros)
-                )
-            }
+        combine(_lugares, _categoria, _radio, _soloFavoritos, favoritos) { lista, cat, radio, soloFav, favs ->
+            lista
+                .filter { cat == null || it.lugar.categoria == cat }
+                .filter { !soloFav || it.lugar.id in favs }
+                .map {
+                    it.copy(
+                        dentroDelRadio = dentroDelRadio(it.metros, radio),
+                        minutosAPie = minutosAPie(it.metros),
+                        esFavorito = it.lugar.id in favs
+                    )
+                }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), _lugares.value)
 
     private val _seleccionado = MutableStateFlow<Int?>(null)
@@ -102,6 +115,20 @@ class MapaViewModel(
 
     fun seleccionarRadio(metros: Int?) {
         _radio.value = metros
+    }
+
+    // Marca o quita un lugar como favorito (se guarda en DataStore)
+    fun alternarFavorito(id: Int) {
+        viewModelScope.launch { favoritosRepo.alternar(id) }
+    }
+
+    // Activa o desactiva el chip "Mis lugares"
+    fun alternarMisLugares() {
+        _soloFavoritos.value = !_soloFavoritos.value
+        // si el lugar seleccionado no es favorito, queda fuera de la lista y se deselecciona
+        if (_soloFavoritos.value && _seleccionado.value !in favoritos.value) {
+            _seleccionado.value = null
+        }
     }
 
     // Tocar la categoría ya activa la quita (vuelve a "Todos"); null también es "Todos"

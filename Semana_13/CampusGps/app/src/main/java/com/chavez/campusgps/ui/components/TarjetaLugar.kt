@@ -12,11 +12,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SuggestionChip
@@ -39,6 +42,7 @@ fun TarjetaLugar(
     seleccionada: Boolean,
     onClick: () -> Unit,
     onComoLlegar: (Lugar) -> Unit,
+    onFavorito: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     ElevatedCard(
@@ -82,10 +86,27 @@ fun TarjetaLugar(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Text(
-                    item.metros?.let { formatearDistancia(it) } ?: "Sin calcular",
-                    style = MaterialTheme.typography.titleSmall
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        item.metros?.let { formatearDistancia(it) } ?: "Sin calcular",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    IconButton(onClick = onFavorito) {
+                        Icon(
+                            imageVector = if (item.esFavorito) Icons.Filled.Star else Icons.Outlined.Star,
+                            contentDescription = if (item.esFavorito) {
+                                "Quitar de favoritos"
+                            } else {
+                                "Marcar como favorito"
+                            },
+                            tint = if (item.esFavorito) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            }
+                        )
+                    }
+                }
             }
 
             if (item.minutosAPie != null || item.dentroDelRadio) {

@@ -16,7 +16,8 @@ data class LugarConDistancia(
     val lugar: Lugar,
     val metros: Float?,
     val dentroDelRadio: Boolean = false,
-    val minutosAPie: Int? = null
+    val minutosAPie: Int? = null,
+    val esFavorito: Boolean = false
 )
 //commit 9
 enum class TipoError { SIN_PERMISO, GPS_APAGADO, SIN_PLAY_SERVICES, OTRO }

@@ -47,6 +47,7 @@ fun PantallaMapa(vm: MapaViewModel) {
     val masCercano by vm.masCercano.collectAsState()
     val categoria by vm.categoria.collectAsState()
     val radio by vm.radio.collectAsState()
+    val soloFavoritos by vm.soloFavoritos.collectAsState()
     val contexto = LocalContext.current
 
     // ¿tiene FINE o COARSE?
@@ -111,6 +112,8 @@ fun PantallaMapa(vm: MapaViewModel) {
                 categorias = vm.categorias,
                 seleccionada = categoria,
                 onSeleccionar = { vm.filtrarPorCategoria(it) },
+                soloFavoritos = soloFavoritos,
+                onAlternarFavoritos = { vm.alternarMisLugares() },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -168,6 +171,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                 seleccionado = seleccionado,
                 onClick = { vm.seleccionar(it) },
                 onComoLlegar = { abrirRutaAPie(contexto, it) },
+                onFavorito = { vm.alternarFavorito(it) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(220.dp)

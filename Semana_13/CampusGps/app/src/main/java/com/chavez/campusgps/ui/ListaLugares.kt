@@ -18,6 +18,7 @@ fun ListaLugares(
     seleccionado: Int?,
     onClick: (Int) -> Unit,
     onComoLlegar: (Lugar) -> Unit,
+    onFavorito: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -30,7 +31,8 @@ fun ListaLugares(
                 item = item,
                 seleccionada = item.lugar.id == seleccionado,
                 onClick = { onClick(item.lugar.id) },
-                onComoLlegar = onComoLlegar
+                onComoLlegar = onComoLlegar,
+                onFavorito = { onFavorito(item.lugar.id) }
             )
         }
     }

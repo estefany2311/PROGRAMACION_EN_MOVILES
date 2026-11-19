@@ -1,10 +1,13 @@
 package com.chavez.campusgps.ui
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import com.chavez.campusgps.R
 import com.chavez.campusgps.model.LugarConDistancia
 import com.chavez.campusgps.model.UbicacionUi
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -13,6 +16,7 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.Dash
 import com.google.android.gms.maps.model.Gap
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
@@ -39,7 +43,11 @@ fun MapaUbicacion(
         position = CameraPosition.fromLatLngZoom(LatLng(-12.0464, -77.0428), 12f)
     }
 
-    //  cuando llega la ubicación, la cámara viaja hasta ahí (zoom 16)
+    // mej6: ¿el celular está en modo oscuro? y contexto para leer el estilo desde res/raw
+    val oscuro = isSystemInDarkTheme()
+    val contexto = LocalContext.current
+
+    //  cuando llega la ubicación, la cámara viaja hasta ahí
     LaunchedEffect(estado) {
         if (estado is UbicacionUi.Lista) {
             camara.animate(
@@ -51,7 +59,7 @@ fun MapaUbicacion(
         }
     }
 
-    // al seleccionar un lugar, la cámara viaja hasta él (zoom 17)
+    // al seleccionar un lugar, la cámara viaja hasta él
     LaunchedEffect(seleccionado) {
         val lugar = lugares.firstOrNull { it.lugar.id == seleccionado }?.lugar
         if (lugar != null) {
@@ -61,11 +69,19 @@ fun MapaUbicacion(
         }
     }
 
-    // Punto azul nativo y botón "mi ubicación": solo si el permiso fue concedido mej3
+    // Punto azul nativo y botón "mi ubicación" mej3
+    // mej6: estilo oscuro del mapa (res/raw/map_dark.json) solo si el tema es oscuro
     GoogleMap(
         modifier = modifier,
         cameraPositionState = camara,
-        properties = MapProperties(isMyLocationEnabled = permisoConcedido),
+        properties = MapProperties(
+            isMyLocationEnabled = permisoConcedido,
+            mapStyleOptions = if (oscuro) {
+                MapStyleOptions.loadRawResourceStyle(contexto, R.raw.map_dark)
+            } else {
+                null
+            }
+        ),
         uiSettings = MapUiSettings(myLocationButtonEnabled = permisoConcedido)
     ) {
         //  marcador "Estás aquí" solo si ya hay ubicación
