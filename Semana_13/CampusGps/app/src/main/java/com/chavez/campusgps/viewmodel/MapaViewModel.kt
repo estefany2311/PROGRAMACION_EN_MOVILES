@@ -1,10 +1,13 @@
 package com.chavez.campusgps.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.chavez.campusgps.data.LugaresRepository
 import com.chavez.campusgps.data.UbicacionRepository
 import com.chavez.campusgps.model.LugarConDistancia
+import com.chavez.campusgps.model.Posicion
+import com.chavez.campusgps.util.distanciaMetros
 import com.chavez.campusgps.model.UbicacionUi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,18 +36,26 @@ class MapaViewModel(
             ubicacionRepo.obtenerPosicion()
                 .onSuccess {
                     _estado.value = UbicacionUi.Lista(it)
-                    // TODO Paso 5: actualizarDistancias(it)
+                    actualizarDistancias(it)
                 }
                 .onFailure { _estado.value = UbicacionUi.Error(mensajeDe(it)) }
         }
+    }
+
+    // Calcula la distancia a cada lugar y publica la lista ordenada de menor a mayor
+    private fun actualizarDistancias(pos: Posicion) {
+        _lugares.value = lugaresRepo.obtenerLugares()
+            .map { LugarConDistancia(it, distanciaMetros(pos, it)) }
+            .sortedBy { it.metros }
+        Log.d("CampusGPS", "Lugares: " + _lugares.value.joinToString { "${it.lugar.nombre}=${it.metros}" })
     }
 
     fun permisoDenegado() {
         _estado.value = UbicacionUi.Error("Sin permiso de ubicación no puedo mostrar dónde estás")
     }
 
-    // TODO Paso 6: fun seleccionar(id: Int?)
-    // TODO Paso 7: val masCercano: StateFlow<Lugar?>
+    //  fun seleccionar(id: Int?)
+    // val masCercano: StateFlow<Lugar?>
 
     private fun mensajeDe(e: Throwable): String = when (e) {
         is SecurityException -> "Falta el permiso de ubicación"
