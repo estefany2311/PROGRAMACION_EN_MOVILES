@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.chavez.centrotareas.data.TareasRepository
 import com.chavez.centrotareas.model.CargaUi
 import com.chavez.centrotareas.model.PrimosUi
+import com.chavez.centrotareas.util.reintentar
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
@@ -106,6 +107,19 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
     private suspend fun <T> conLimite(bloque: suspend () -> T): T =
         if (_limiteActivo.value) withTimeout(2000) { bloque() } else bloque()
 
+    // Mejora 3: aviso "Reintentando " mientras se reintenta
+    private val _aviso = MutableStateFlow<String?>(null)
+    val aviso: StateFlow<String?> = _aviso.asStateFlow()
+
+    private suspend fun <T> conReintentos(bloque: suspend () -> T): T =
+        reintentar(
+            onReintento = { intento, maximo ->
+                Log.d("REINTENTO", "Reintentando $intento/$maximo...")
+                _aviso.value = "Reintentando $intento/$maximo..."
+            },
+            bloque = bloque
+        )
+
     // Una por una: primero el perfil  y después los pedidos
     fun cargarUnaPorUna() {
         if (_carga.value == CargaUi.Cargando) return
@@ -114,9 +128,11 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
             val inicio = System.currentTimeMillis()
             try {
                 val (perfil, pedidos) = conLimite {
-                    val perfil = repo.cargarPerfil()
-                    val pedidos = repo.cargarPedidos(_simularError.value)
-                    Pair(perfil, pedidos)
+                    conReintentos {
+                        val perfil = repo.cargarPerfil()
+                        val pedidos = repo.cargarPedidos(_simularError.value)
+                        Pair(perfil, pedidos)
+                    }
                 }
                 _carga.value = CargaUi.Exito(
                     modo = "Una por una",
@@ -130,6 +146,8 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
             } catch (e: Exception) {
                 if (e is CancellationException) throw e // nunca tragar la cancelación
                 _carga.value = CargaUi.Error("No se pudo cargar: " + e.message)
+            } finally {
+                _aviso.value = null
             }
         }
     }
@@ -142,10 +160,12 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
             val inicio = System.currentTimeMillis()
             try {
                 val (perfil, pedidos) = conLimite {
-                    coroutineScope {
-                        val a = async { repo.cargarPerfil() }
-                        val b = async { repo.cargarPedidos(_simularError.value) }
-                        Pair(a.await(), b.await())
+                    conReintentos {
+                        coroutineScope {
+                            val a = async { repo.cargarPerfil() }
+                            val b = async { repo.cargarPedidos(_simularError.value) }
+                            Pair(a.await(), b.await())
+                        }
                     }
                 }
                 _carga.value = CargaUi.Exito(
@@ -159,6 +179,8 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
             } catch (e: Exception) {
                 if (e is CancellationException) throw e // nunca tragar la cancelación
                 _carga.value = CargaUi.Error("No se pudo cargar: " + e.message)
+            } finally {
+                _aviso.value = null
             }
         }
     }

@@ -148,6 +148,7 @@ private fun TarjetaCargas(viewModel: TareasViewModel) {
     val carga by viewModel.carga.collectAsState()
     val simularError by viewModel.simularError.collectAsState()
     val limiteActivo by viewModel.limiteActivo.collectAsState()
+    val aviso by viewModel.aviso.collectAsState() //Mej3
     val cargando = carga == CargaUi.Cargando
 
     TarjetaTarea(titulo = "Dos cargas") {
@@ -172,8 +173,12 @@ private fun TarjetaCargas(viewModel: TareasViewModel) {
             checked = limiteActivo,
             onCheckedChange = { viewModel.cambiarLimite(it) }
         )
+        //mej3
         when (val estado = carga) {
-            CargaUi.Cargando -> CircularProgressIndicator()
+            CargaUi.Cargando -> {
+                CircularProgressIndicator()
+                aviso?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+            }
             is CargaUi.Exito -> CajaResultado(
                 texto = "Modo: ${estado.modo}\nPerfil: ${estado.perfil}\n" +
                     "Pedidos: ${estado.pedidos}\nTiempo: ${estado.milisegundos} ms",

@@ -11,7 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-/** Interruptor con texto al lado. Stateless: recibe el valor y avisa el cambio. */
+//Interruptor con texto al lado. Stateless: recibe el valor y avisa el cambio.
 @Composable
 fun SwitchEtiquetado(
     texto: String,
