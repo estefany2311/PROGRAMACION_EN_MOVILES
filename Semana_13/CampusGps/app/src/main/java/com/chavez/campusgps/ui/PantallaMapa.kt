@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.chavez.campusgps.model.UbicacionUi
+import com.chavez.campusgps.ui.components.FiltroCategorias
 import com.chavez.campusgps.util.formatearDistancia
 import com.chavez.campusgps.viewmodel.MapaViewModel
 
@@ -38,6 +39,7 @@ fun PantallaMapa(vm: MapaViewModel) {
     val lugares by vm.lugares.collectAsState()
     val seleccionado by vm.seleccionado.collectAsState()
     val masCercano by vm.masCercano.collectAsState()
+    val categoria by vm.categoria.collectAsState()
     val contexto = LocalContext.current
 
     val lanzador = rememberLauncherForActivityResult(
@@ -86,6 +88,13 @@ fun PantallaMapa(vm: MapaViewModel) {
                 .padding(padding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
+            FiltroCategorias(
+                categorias = vm.categorias,
+                seleccionada = categoria,
+                onSeleccionar = { vm.filtrarPorCategoria(it) },
+                modifier = Modifier.fillMaxWidth()
+            )
 
             MapaUbicacion(
                 estado = estado,

@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -27,10 +28,23 @@ class MapaViewModel(
     private val _estado = MutableStateFlow<UbicacionUi>(UbicacionUi.Inicial)
     val estado: StateFlow<UbicacionUi> = _estado.asStateFlow()
 
+    // Lista completa (con o sin distancia); la que ve la pantalla es `lugares`, ya filtrada
     private val _lugares = MutableStateFlow(
         lugaresRepo.obtenerLugares().map { LugarConDistancia(it, null) }
     )
-    val lugares: StateFlow<List<LugarConDistancia>> = _lugares.asStateFlow()
+
+    // Categorías disponibles, sacadas de los datos (Estudio, Comida, Eventos, Servicios)
+    val categorias: List<String> = lugaresRepo.obtenerLugares().map { it.categoria }.distinct()
+
+    // null = "Todos"
+    private val _categoria = MutableStateFlow<String?>(null)
+    val categoria: StateFlow<String?> = _categoria.asStateFlow()
+
+    // Lista filtrada por categoría: la usan el mapa, la lista y el "más cercano"
+    val lugares: StateFlow<List<LugarConDistancia>> =
+        combine(_lugares, _categoria) { lista, cat ->
+            if (cat == null) lista else lista.filter { it.lugar.categoria == cat }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), _lugares.value)
 
     private val _seleccionado = MutableStateFlow<Int?>(null)
     val seleccionado: StateFlow<Int?> = _seleccionado.asStateFlow()
@@ -71,6 +85,17 @@ class MapaViewModel(
 
     fun seleccionar(id: Int?) {
         _seleccionado.value = id
+    }
+
+    // Tocar la categoría ya activa la quita (vuelve a "Todos"); null también es "Todos"
+    fun filtrarPorCategoria(cat: String?) {
+        _categoria.value = if (cat == _categoria.value) null else cat
+        // si el lugar seleccionado quedó fuera del filtro, se deselecciona
+        val actual = _categoria.value
+        val sel = _lugares.value.firstOrNull { it.lugar.id == _seleccionado.value }
+        if (actual != null && sel != null && sel.lugar.categoria != actual) {
+            _seleccionado.value = null
+        }
     }
 
     // El más cercano: el primero con distancia calculada (null si aún no hay ubicación)
