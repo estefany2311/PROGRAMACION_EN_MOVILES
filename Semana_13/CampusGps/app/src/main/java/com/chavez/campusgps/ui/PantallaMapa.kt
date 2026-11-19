@@ -111,7 +111,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                 UbicacionUi.Buscando -> Text("Buscando…")
                 is UbicacionUi.Lista ->
                     Text("Lat: ${e.posicion.latitud}  Lon: ${e.posicion.longitud}")
-                is UbicacionUi.Error -> Text(e.mensaje, color = MaterialTheme.colorScheme.error)
+                is UbicacionUi.Error -> MensajeError(error = e, onReintentar = { alPulsar() })
             }
 
             OutlinedButton(
