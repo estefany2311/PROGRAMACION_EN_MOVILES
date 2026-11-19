@@ -20,6 +20,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -44,22 +49,33 @@ fun PantallaMapa(vm: MapaViewModel) {
     val radio by vm.radio.collectAsState()
     val contexto = LocalContext.current
 
+    // ¿tiene FINE o COARSE?
+    fun revisarPermiso(): Boolean = listOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    ).any {
+        ContextCompat.checkSelfPermission(contexto, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    // Estado "tengo permiso": se actualiza al responder el diálogo (sin reiniciar la app)
+    var permisoConcedido by remember { mutableStateOf(revisarPermiso()) }
+
+    // Si el usuario cambia el permiso desde Ajustes y vuelve, se vuelve a revisar
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        permisoConcedido = revisarPermiso()
+    }
+
     val lanzador = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { resultado ->
+        permisoConcedido = resultado.values.any { it }
         // si algún valor es true -> buscar; si no -> permiso denegado
-        if (resultado.values.any { it }) vm.buscar() else vm.permisoDenegado()
+        if (permisoConcedido) vm.buscar() else vm.permisoDenegado()
     }
 
     fun alPulsar() {
         // ¿ya tiene FINE o COARSE? -> buscar sin preguntar
-        val tienePermiso = listOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        ).any {
-            ContextCompat.checkSelfPermission(contexto, it) == PackageManager.PERMISSION_GRANTED
-        }
-        if (tienePermiso) {
+        if (permisoConcedido) {
             vm.buscar()
         } else {
             // si no, pedir los permisos
@@ -109,6 +125,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                 seleccionado = seleccionado,
                 masCercanoId = masCercano?.lugar?.id,
                 radio = radio,
+                permisoConcedido = permisoConcedido,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
