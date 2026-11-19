@@ -8,12 +8,14 @@ import com.chavez.centrotareas.model.CargaUi
 import com.chavez.centrotareas.model.PrimosUi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 
 class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
@@ -92,21 +94,39 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         _simularError.value = valor
     }
 
-    // Una por una: primero el perfil (2 s) y después los pedidos (3 s) = ~5 s
+    // Mej2: interruptor "Límite de 2 s" (apagado por defecto)
+    private val _limiteActivo = MutableStateFlow(false)
+    val limiteActivo: StateFlow<Boolean> = _limiteActivo.asStateFlow()
+
+    fun cambiarLimite(valor: Boolean) {
+        _limiteActivo.value = valor
+    }
+
+    // Envuelve la carga en withTimeout solo si el interruptor está encendido
+    private suspend fun <T> conLimite(bloque: suspend () -> T): T =
+        if (_limiteActivo.value) withTimeout(2000) { bloque() } else bloque()
+
+    // Una por una: primero el perfil  y después los pedidos
     fun cargarUnaPorUna() {
         if (_carga.value == CargaUi.Cargando) return
         _carga.value = CargaUi.Cargando
         viewModelScope.launch {
             val inicio = System.currentTimeMillis()
             try {
-                val perfil = repo.cargarPerfil()
-                val pedidos = repo.cargarPedidos(_simularError.value)
+                val (perfil, pedidos) = conLimite {
+                    val perfil = repo.cargarPerfil()
+                    val pedidos = repo.cargarPedidos(_simularError.value)
+                    Pair(perfil, pedidos)
+                }
                 _carga.value = CargaUi.Exito(
                     modo = "Una por una",
                     perfil = perfil,
                     pedidos = pedidos.size,
                     milisegundos = System.currentTimeMillis() - inicio
                 )
+            } catch (e: TimeoutCancellationException) {
+                // Va ANTES del catch general: un timeout no es una cancelación del usuario
+                _carga.value = CargaUi.Error("Tardó demasiado")
             } catch (e: Exception) {
                 if (e is CancellationException) throw e // nunca tragar la cancelación
                 _carga.value = CargaUi.Error("No se pudo cargar: " + e.message)
@@ -121,10 +141,12 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         viewModelScope.launch {
             val inicio = System.currentTimeMillis()
             try {
-                val (perfil, pedidos) = coroutineScope {
-                    val a = async { repo.cargarPerfil() }
-                    val b = async { repo.cargarPedidos(_simularError.value) }
-                    Pair(a.await(), b.await())
+                val (perfil, pedidos) = conLimite {
+                    coroutineScope {
+                        val a = async { repo.cargarPerfil() }
+                        val b = async { repo.cargarPedidos(_simularError.value) }
+                        Pair(a.await(), b.await())
+                    }
                 }
                 _carga.value = CargaUi.Exito(
                     modo = "A la vez",
@@ -132,6 +154,8 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
                     pedidos = pedidos.size,
                     milisegundos = System.currentTimeMillis() - inicio
                 )
+            } catch (e: TimeoutCancellationException) {
+                _carga.value = CargaUi.Error("Tardó demasiado")
             } catch (e: Exception) {
                 if (e is CancellationException) throw e // nunca tragar la cancelación
                 _carga.value = CargaUi.Error("No se pudo cargar: " + e.message)

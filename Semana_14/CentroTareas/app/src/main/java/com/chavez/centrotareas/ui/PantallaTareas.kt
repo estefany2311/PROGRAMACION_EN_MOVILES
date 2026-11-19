@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.chavez.centrotareas.model.CargaUi
+import com.chavez.centrotareas.ui.components.SwitchEtiquetado
 import com.chavez.centrotareas.model.PrimosUi
 import com.chavez.centrotareas.viewmodel.TareasViewModel
 
@@ -146,6 +147,7 @@ private fun TarjetaPrimos(viewModel: TareasViewModel) {
 private fun TarjetaCargas(viewModel: TareasViewModel) {
     val carga by viewModel.carga.collectAsState()
     val simularError by viewModel.simularError.collectAsState()
+    val limiteActivo by viewModel.limiteActivo.collectAsState()
     val cargando = carga == CargaUi.Cargando
 
     TarjetaTarea(titulo = "Dos cargas") {
@@ -165,6 +167,11 @@ private fun TarjetaCargas(viewModel: TareasViewModel) {
             Spacer(Modifier.width(8.dp))
             Text("Simular error", style = MaterialTheme.typography.bodyMedium)
         }
+        SwitchEtiquetado(
+            texto = "Límite de 2 s",
+            checked = limiteActivo,
+            onCheckedChange = { viewModel.cambiarLimite(it) }
+        )
         when (val estado = carga) {
             CargaUi.Cargando -> CircularProgressIndicator()
             is CargaUi.Exito -> CajaResultado(
