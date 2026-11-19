@@ -1,6 +1,7 @@
 package com.chavez.campusgps.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,7 +35,8 @@ fun MapaUbicacion(
     masCercanoId: Int?,
     radio: Int?,
     permisoConcedido: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues()
 ) {
     val colorRadio = MaterialTheme.colorScheme.primary
     val colorLinea = MaterialTheme.colorScheme.tertiary
@@ -74,6 +76,7 @@ fun MapaUbicacion(
     GoogleMap(
         modifier = modifier,
         cameraPositionState = camara,
+        contentPadding = contentPadding,
         properties = MapProperties(
             isMyLocationEnabled = permisoConcedido,
             mapStyleOptions = if (oscuro) {

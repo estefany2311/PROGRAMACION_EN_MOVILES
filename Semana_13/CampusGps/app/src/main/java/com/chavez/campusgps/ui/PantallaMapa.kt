@@ -1,44 +1,40 @@
 package com.chavez.campusgps.ui
 
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import com.chavez.campusgps.model.UbicacionUi
+import com.chavez.campusgps.ui.components.BarraAcciones
+import com.chavez.campusgps.ui.components.BarraSuperiorFlotante
+import com.chavez.campusgps.ui.components.EstadoUbicacion
 import com.chavez.campusgps.ui.components.FiltroCategorias
+import com.chavez.campusgps.ui.components.PanelInferior
 import com.chavez.campusgps.ui.components.SelectorRadio
-import com.chavez.campusgps.util.formatearDistancia
 import com.chavez.campusgps.viewmodel.MapaViewModel
 
-// Pantalla principal: mapa arriba, botón y texto debajo.
-// Los siguientes pasos agregan lista, más cercano y errores.
-@OptIn(ExperimentalMaterial3Api::class)
+// Pantalla principal: mapa a pantalla completa con la barra arriba y el panel abajo flotando.
+// Solo arma los componentes y los conecta con el ViewModel.
 @Composable
 fun PantallaMapa(vm: MapaViewModel) {
     val estado by vm.estado.collectAsState()
@@ -50,64 +46,44 @@ fun PantallaMapa(vm: MapaViewModel) {
     val soloFavoritos by vm.soloFavoritos.collectAsState()
     val contexto = LocalContext.current
 
-    // ¿tiene FINE o COARSE?
-    fun revisarPermiso(): Boolean = listOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION
-    ).any {
-        ContextCompat.checkSelfPermission(contexto, it) == PackageManager.PERMISSION_GRANTED
-    }
+    val permiso = rememberPermisoUbicacion(
+        onConcedido = { vm.buscar() },
+        onDenegado = { vm.permisoDenegado() }
+    )
 
-    // Estado "tengo permiso": se actualiza al responder el diálogo (sin reiniciar la app)
-    var permisoConcedido by remember { mutableStateOf(revisarPermiso()) }
+    // Alto de lo que flota arriba y abajo: se usa como padding del mapa para que el logo de Google,
+    // el zoom y el botón de mi ubicación no queden tapados
+    val densidad = LocalDensity.current
+    var altoSuperior by remember { mutableStateOf(0.dp) }
+    var altoInferior by remember { mutableStateOf(0.dp) }
 
-    // Si el usuario cambia el permiso desde Ajustes y vuelve, se vuelve a revisar
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        permisoConcedido = revisarPermiso()
-    }
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val altoMaximoPanel = maxHeight * 0.45f
 
-    val lanzador = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { resultado ->
-        permisoConcedido = resultado.values.any { it }
-        // si algún valor es true -> buscar; si no -> permiso denegado
-        if (permisoConcedido) vm.buscar() else vm.permisoDenegado()
-    }
+        // Fondo: mapa a pantalla completa
+        MapaUbicacion(
+            estado = estado,
+            lugares = lugares,
+            seleccionado = seleccionado,
+            masCercanoId = masCercano?.lugar?.id,
+            radio = radio,
+            permisoConcedido = permiso.concedido,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(top = altoSuperior, bottom = altoInferior)
+        )
 
-    fun alPulsar() {
-        // ¿ya tiene FINE o COARSE? -> buscar sin preguntar
-        if (permisoConcedido) {
-            vm.buscar()
-        } else {
-            // si no, pedir los permisos
-            lanzador.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
-            )
-        }
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("CampusGPS") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        },
-        modifier = Modifier.fillMaxSize()
-    ) { padding ->
+        // Arriba: título, filtros y radio
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .align(Alignment.TopCenter)
+                .onSizeChanged { altoSuperior = with(densidad) { it.height.toDp() } }
+                .statusBarsPadding()
+                .padding(top = 16.dp)
         ) {
-
+            BarraSuperiorFlotante(
+                titulo = "CampusGPS",
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
             FiltroCategorias(
                 categorias = vm.categorias,
                 seleccionada = categoria,
@@ -116,56 +92,36 @@ fun PantallaMapa(vm: MapaViewModel) {
                 onAlternarFavoritos = { vm.alternarMisLugares() },
                 modifier = Modifier.fillMaxWidth()
             )
-
             SelectorRadio(
                 seleccionado = radio,
-                onSeleccionar = { vm.seleccionarRadio(it) }
+                onSeleccionar = { vm.seleccionarRadio(it) },
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
+        }
 
-            MapaUbicacion(
+        // Abajo: acciones, estado y lista
+        PanelInferior(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                // se mide con los márgenes incluidos: es lo que el mapa debe dejar libre abajo
+                .onSizeChanged { altoInferior = with(densidad) { it.height.toDp() } }
+                .padding(horizontal = 16.dp)
+                .navigationBarsPadding()
+                .padding(bottom = 16.dp)
+                .wrapContentHeight()
+                .heightIn(max = altoMaximoPanel)
+        ) {
+            BarraAcciones(
+                buscando = estado is UbicacionUi.Buscando,
+                hayMasCercano = masCercano != null,
+                onBuscar = permiso.pedir,
+                onIrAlMasCercano = { masCercano?.let { vm.seleccionar(it.lugar.id) } }
+            )
+            EstadoUbicacion(
                 estado = estado,
-                lugares = lugares,
-                seleccionado = seleccionado,
-                masCercanoId = masCercano?.lugar?.id,
-                radio = radio,
-                permisoConcedido = permisoConcedido,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
+                masCercano = masCercano,
+                onReintentar = permiso.pedir
             )
-
-            // Botón y texto debajo del mapa
-            Button(
-                onClick = { alPulsar() },
-                enabled = estado !is UbicacionUi.Buscando,
-                modifier = Modifier.padding(vertical = 8.dp)
-            ) {
-                Text("Obtener mi ubicación")
-            }
-
-            when (val e = estado) {
-                UbicacionUi.Inicial -> Text("Pulsa el botón para obtener tu ubicación")
-                UbicacionUi.Buscando -> Text("Buscando…")
-                is UbicacionUi.Lista ->
-                    Text("Lat: ${e.posicion.latitud}  Lon: ${e.posicion.longitud}")
-                is UbicacionUi.Error -> MensajeError(error = e, onReintentar = { alPulsar() })
-            }
-
-            OutlinedButton(
-                onClick = { masCercano?.let { vm.seleccionar(it.lugar.id) } },
-                enabled = masCercano != null
-            ) {
-                Text("Ir al más cercano")
-            }
-
-            masCercano?.let { cercano ->
-                Text(
-                    "Más cercano: ${cercano.lugar.nombre} " +
-                        "(${cercano.metros?.let { formatearDistancia(it) } ?: "Sin calcular"})"
-                )
-            }
-
-            // Lista con altura fija debajo; al tocar una tarjeta se selecciona el lugar
             ListaLugares(
                 lugares = lugares,
                 seleccionado = seleccionado,
@@ -174,7 +130,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                 onFavorito = { vm.alternarFavorito(it) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp)
+                    .weight(1f, fill = false)
             )
         }
     }

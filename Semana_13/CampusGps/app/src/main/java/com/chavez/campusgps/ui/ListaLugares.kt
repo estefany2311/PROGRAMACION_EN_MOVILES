@@ -23,7 +23,7 @@ fun ListaLugares(
 ) {
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(0.dp), // el padding lo pone el panel
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(lugares, key = { it.lugar.id }) { item ->

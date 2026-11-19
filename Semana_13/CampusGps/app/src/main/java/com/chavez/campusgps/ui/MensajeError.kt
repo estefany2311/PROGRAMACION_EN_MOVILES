@@ -3,12 +3,12 @@ package com.chavez.campusgps.ui
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,34 +28,40 @@ fun MensajeError(
 ) {
     val contexto = LocalContext.current
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp)
-            .background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(8.dp))
-            .padding(12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer
+        )
     ) {
-        Text(error.mensaje, color = MaterialTheme.colorScheme.onErrorContainer)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(error.mensaje, style = MaterialTheme.typography.bodyMedium)
 
-        when (error.tipo) {
-            TipoError.SIN_PERMISO -> Button(
-                onClick = {
-                    val intent = Intent(
-                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.fromParts("package", contexto.packageName, null)
-                    )
-                    contexto.startActivity(intent)
-                },
-                modifier = Modifier.padding(top = 8.dp)
-            ) { Text("Abrir ajustes") }
+            when (error.tipo) {
+                TipoError.SIN_PERMISO -> Button(
+                    onClick = {
+                        val intent = Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", contexto.packageName, null)
+                        )
+                        contexto.startActivity(intent)
+                    },
+                    modifier = Modifier.padding(top = 8.dp)
+                ) { Text("Abrir ajustes") }
 
-            TipoError.GPS_APAGADO, TipoError.OTRO -> Button(
-                onClick = onReintentar,
-                modifier = Modifier.padding(top = 8.dp)
-            ) { Text("Reintentar") }
+                TipoError.GPS_APAGADO, TipoError.OTRO -> Button(
+                    onClick = onReintentar,
+                    modifier = Modifier.padding(top = 8.dp)
+                ) { Text("Reintentar") }
 
-            TipoError.SIN_PLAY_SERVICES -> Unit // sin botón de reintentar
+                TipoError.SIN_PLAY_SERVICES -> Unit // sin botón de reintentar
+            }
         }
     }
 }

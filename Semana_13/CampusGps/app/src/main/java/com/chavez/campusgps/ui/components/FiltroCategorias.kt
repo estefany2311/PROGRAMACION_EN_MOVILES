@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -26,6 +27,11 @@ fun FiltroCategorias(
     onAlternarFavoritos: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Fondo sólido en los chips sin seleccionar para que se lean sobre el mapa
+    val colores = FilterChipDefaults.filterChipColors(
+        containerColor = MaterialTheme.colorScheme.surface
+    )
+
     LazyRow(
         modifier = modifier,
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -35,7 +41,8 @@ fun FiltroCategorias(
             FilterChip(
                 selected = seleccionada == null,
                 onClick = { onSeleccionar(null) },
-                label = { Text("Todos") }
+                label = { Text("Todos") },
+                colors = colores
             )
         }
         item {
@@ -43,6 +50,7 @@ fun FiltroCategorias(
                 selected = soloFavoritos,
                 onClick = onAlternarFavoritos,
                 label = { Text("Mis lugares") },
+                colors = colores,
                 leadingIcon = {
                     Icon(
                         Icons.Filled.Star,
@@ -56,7 +64,8 @@ fun FiltroCategorias(
             FilterChip(
                 selected = categoria == seleccionada,
                 onClick = { onSeleccionar(categoria) },
-                label = { Text(categoria) }
+                label = { Text(categoria) },
+                colors = colores
             )
         }
     }
