@@ -22,6 +22,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -63,13 +64,12 @@ fun PantallaTareas(viewModel: TareasViewModel) {
 private fun TarjetaProgreso(viewModel: TareasViewModel) {
     val mensaje by viewModel.mensaje.collectAsState()
 
+    var toques by remember { mutableIntStateOf(0) }
+//paso1
     TarjetaTarea(titulo = "Tarea con progreso") {
-        // TODO Paso 1: botón "Tócame: n" y "Tarea larga (MAL)"
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { /* TODO Paso 3 */ }) { Text("Iniciar") }
-            OutlinedButton(onClick = { /* TODO Paso 4 */ }, enabled = false) {
-                Text("Cancelar")
-            }
+            Button(onClick = { toques++ }) { Text("Tócame: $toques") }
+            Button(onClick = { viewModel.tareaLargaMala() }) { Text("Tarea larga (MAL)") }
         }
         Text(text = mensaje, style = MaterialTheme.typography.bodyMedium)
     }
