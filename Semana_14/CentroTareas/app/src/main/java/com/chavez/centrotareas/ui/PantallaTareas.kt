@@ -69,7 +69,7 @@ private fun TarjetaProgreso(viewModel: TareasViewModel) {
     TarjetaTarea(titulo = "Tarea con progreso") {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = { toques++ }) { Text("Tócame: $toques") }
-            Button(onClick = { viewModel.tareaLargaMala() }) { Text("Tarea larga (MAL)") }
+            Button(onClick = { viewModel.tareaLarga() }) { Text("Tarea larga") }
         }
         Text(text = mensaje, style = MaterialTheme.typography.bodyMedium)
     }
