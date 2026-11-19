@@ -40,6 +40,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.chavez.centrotareas.model.CargaUi
 import com.chavez.centrotareas.ui.components.SwitchEtiquetado
+import com.chavez.centrotareas.ui.components.TablaTiempos
 import com.chavez.centrotareas.model.PrimosUi
 import com.chavez.centrotareas.viewmodel.TareasViewModel
 
@@ -68,6 +69,8 @@ fun PantallaTareas(viewModel: TareasViewModel) {
             TarjetaProgreso(viewModel)
             TarjetaPrimos(viewModel)
             TarjetaCargas(viewModel)
+            val tiempos by viewModel.tiempos.collectAsState() //mej4
+            TablaTiempos(estadisticas = tiempos)
         }
     }
 }

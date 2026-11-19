@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.chavez.centrotareas.data.TareasRepository
 import com.chavez.centrotareas.model.CargaUi
+import com.chavez.centrotareas.model.EstadisticaModo
 import com.chavez.centrotareas.model.PrimosUi
 import com.chavez.centrotareas.util.reintentar
 import kotlinx.coroutines.CancellationException
@@ -15,6 +16,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
@@ -107,6 +109,18 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
     private suspend fun <T> conLimite(bloque: suspend () -> T): T =
         if (_limiteActivo.value) withTimeout(2000) { bloque() } else bloque()
 
+    // Mejora 4: tiempos acumulados de cada modo (solo cargas con éxito)
+    private val _tiempos = MutableStateFlow(
+        listOf(EstadisticaModo("Una por una"), EstadisticaModo("A la vez"))
+    )
+    val tiempos: StateFlow<List<EstadisticaModo>> = _tiempos.asStateFlow()
+
+    private fun registrarTiempo(modo: String, ms: Long) {
+        _tiempos.update { lista ->
+            lista.map { if (it.modo == modo) it.copy(mediciones = it.mediciones + ms) else it }
+        }
+    }
+
     // Mejora 3: aviso "Reintentando " mientras se reintenta
     private val _aviso = MutableStateFlow<String?>(null)
     val aviso: StateFlow<String?> = _aviso.asStateFlow()
@@ -134,12 +148,14 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
                         Pair(perfil, pedidos)
                     }
                 }
+                val ms = System.currentTimeMillis() - inicio
                 _carga.value = CargaUi.Exito(
                     modo = "Una por una",
                     perfil = perfil,
                     pedidos = pedidos.size,
-                    milisegundos = System.currentTimeMillis() - inicio
+                    milisegundos = ms
                 )
+                registrarTiempo("Una por una", ms)
             } catch (e: TimeoutCancellationException) {
                 // Va ANTES del catch general: un timeout no es una cancelación del usuario
                 _carga.value = CargaUi.Error("Tardó demasiado")
@@ -168,12 +184,14 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
                         }
                     }
                 }
+                val ms = System.currentTimeMillis() - inicio
                 _carga.value = CargaUi.Exito(
                     modo = "A la vez",
                     perfil = perfil,
                     pedidos = pedidos.size,
-                    milisegundos = System.currentTimeMillis() - inicio
+                    milisegundos = ms
                 )
+                registrarTiempo("A la vez", ms)
             } catch (e: TimeoutCancellationException) {
                 _carga.value = CargaUi.Error("Tardó demasiado")
             } catch (e: Exception) {
