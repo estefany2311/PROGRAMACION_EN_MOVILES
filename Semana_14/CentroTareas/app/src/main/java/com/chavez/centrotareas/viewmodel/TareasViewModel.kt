@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
 
 class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
-    // ----- Tarea con progreso (pasos 1 a 4)
+    // ----- Tarea con progreso
     private val _mensaje = MutableStateFlow("Listo")
     val mensaje: StateFlow<String> = _mensaje.asStateFlow()
 
