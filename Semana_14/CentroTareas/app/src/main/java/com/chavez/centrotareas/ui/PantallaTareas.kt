@@ -13,6 +13,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.chavez.centrotareas.model.CargaUi
 import com.chavez.centrotareas.model.PrimosUi
 import com.chavez.centrotareas.viewmodel.TareasViewModel
 
@@ -60,7 +62,7 @@ fun PantallaTareas(viewModel: TareasViewModel) {
         ) {
             TarjetaProgreso(viewModel)
             TarjetaPrimos(viewModel)
-            TarjetaCargas()
+            TarjetaCargas(viewModel)
         }
     }
 }
@@ -137,11 +139,29 @@ private fun TarjetaPrimos(viewModel: TareasViewModel) {
 }
 
 @Composable
-private fun TarjetaCargas() {
+private fun TarjetaCargas(viewModel: TareasViewModel) {
+    val carga by viewModel.carga.collectAsState()
+    val cargando = carga == CargaUi.Cargando
+
     TarjetaTarea(titulo = "Dos cargas") {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = { /* TODO Paso 6 */ }) { Text("Una por una") }
-            Button(onClick = { /* TODO Paso 6 */ }) { Text("A la vez") }
+            OutlinedButton(onClick = { viewModel.cargarUnaPorUna() }, enabled = !cargando) {
+                Text("Una por una")
+            }
+            Button(onClick = { viewModel.cargarALaVez() }, enabled = !cargando) {
+                Text("A la vez")
+            }
+        }
+        when (val estado = carga) {
+            CargaUi.Cargando -> CircularProgressIndicator()
+            is CargaUi.Exito -> CajaResultado(
+                texto = "Modo: ${estado.modo}\nPerfil: ${estado.perfil}\n" +
+                    "Pedidos: ${estado.pedidos}\nTiempo: ${estado.milisegundos} ms",
+                fondo = MaterialTheme.colorScheme.tertiaryContainer,
+                contenido = MaterialTheme.colorScheme.onTertiaryContainer
+            )
+            // Error se muestra en el Paso 7
+            CargaUi.Inicial, is CargaUi.Error -> Unit
         }
     }
 }
