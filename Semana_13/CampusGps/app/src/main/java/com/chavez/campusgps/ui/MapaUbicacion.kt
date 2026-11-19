@@ -10,12 +10,15 @@ import com.chavez.campusgps.model.UbicacionUi
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.Dash
+import com.google.android.gms.maps.model.Gap
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 
@@ -30,6 +33,8 @@ fun MapaUbicacion(
     modifier: Modifier = Modifier
 ) {
     val colorRadio = MaterialTheme.colorScheme.primary
+    val colorLinea = MaterialTheme.colorScheme.tertiary
+    val lugarSeleccionado = lugares.firstOrNull { it.lugar.id == seleccionado }?.lugar
     val camara = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(-12.0464, -77.0428), 12f)
     }
@@ -70,6 +75,18 @@ fun MapaUbicacion(
                     position = LatLng(estado.posicion.latitud, estado.posicion.longitud)
                 ),
                 title = "Estás aquí"
+            )
+        }
+        // línea punteada RECTA (no es ruta por calles) entre mi posición y el lugar seleccionado
+        if (estado is UbicacionUi.Lista && lugarSeleccionado != null) {
+            Polyline(
+                points = listOf(
+                    LatLng(estado.posicion.latitud, estado.posicion.longitud),
+                    LatLng(lugarSeleccionado.latitud, lugarSeleccionado.longitud)
+                ),
+                color = colorLinea,
+                width = 8f,
+                pattern = listOf(Dash(24f), Gap(16f))
             )
         }
         // círculo del radio alrededor de mi posición (solo con ubicación y radio elegido)

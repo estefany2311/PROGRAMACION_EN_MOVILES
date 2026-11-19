@@ -167,6 +167,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                 lugares = lugares,
                 seleccionado = seleccionado,
                 onClick = { vm.seleccionar(it) },
+                onComoLlegar = { abrirRutaAPie(contexto, it) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(220.dp)

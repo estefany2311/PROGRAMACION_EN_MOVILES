@@ -11,6 +11,7 @@ import com.chavez.campusgps.model.Posicion
 import com.chavez.campusgps.model.TipoError
 import com.chavez.campusgps.util.dentroDelRadio
 import com.chavez.campusgps.util.distanciaMetros
+import com.chavez.campusgps.util.minutosAPie
 import com.chavez.campusgps.model.UbicacionUi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -50,7 +51,12 @@ class MapaViewModel(
     val lugares: StateFlow<List<LugarConDistancia>> =
         combine(_lugares, _categoria, _radio) { lista, cat, radio ->
             val filtrada = if (cat == null) lista else lista.filter { it.lugar.categoria == cat }
-            filtrada.map { it.copy(dentroDelRadio = dentroDelRadio(it.metros, radio)) }
+            filtrada.map {
+                it.copy(
+                    dentroDelRadio = dentroDelRadio(it.metros, radio),
+                    minutosAPie = minutosAPie(it.metros)
+                )
+            }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), _lugares.value)
 
     private val _seleccionado = MutableStateFlow<Int?>(null)
