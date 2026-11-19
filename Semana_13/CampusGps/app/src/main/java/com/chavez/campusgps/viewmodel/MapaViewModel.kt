@@ -10,8 +10,11 @@ import com.chavez.campusgps.model.Posicion
 import com.chavez.campusgps.util.distanciaMetros
 import com.chavez.campusgps.model.UbicacionUi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MapaViewModel(
@@ -58,7 +61,10 @@ class MapaViewModel(
         _seleccionado.value = id
     }
 
-    // val masCercano: StateFlow<Lugar?>
+    // El más cercano: el primero con distancia calculada (null si aún no hay ubicación)
+    val masCercano: StateFlow<LugarConDistancia?> = lugares
+        .map { lista -> lista.firstOrNull { it.metros != null } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     private fun mensajeDe(e: Throwable): String = when (e) {
         is SecurityException -> "Falta el permiso de ubicación"

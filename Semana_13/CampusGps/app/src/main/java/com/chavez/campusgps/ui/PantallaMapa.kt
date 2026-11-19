@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -25,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.chavez.campusgps.model.UbicacionUi
+import com.chavez.campusgps.util.formatearDistancia
 import com.chavez.campusgps.viewmodel.MapaViewModel
 
 // Pantalla principal: mapa arriba, botón y texto debajo.
@@ -35,6 +37,7 @@ fun PantallaMapa(vm: MapaViewModel) {
     val estado by vm.estado.collectAsState()
     val lugares by vm.lugares.collectAsState()
     val seleccionado by vm.seleccionado.collectAsState()
+    val masCercano by vm.masCercano.collectAsState()
     val contexto = LocalContext.current
 
     val lanzador = rememberLauncherForActivityResult(
@@ -88,6 +91,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                 estado = estado,
                 lugares = lugares,
                 seleccionado = seleccionado,
+                masCercanoId = masCercano?.lugar?.id,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
@@ -108,6 +112,20 @@ fun PantallaMapa(vm: MapaViewModel) {
                 is UbicacionUi.Lista ->
                     Text("Lat: ${e.posicion.latitud}  Lon: ${e.posicion.longitud}")
                 is UbicacionUi.Error -> Text(e.mensaje, color = MaterialTheme.colorScheme.error)
+            }
+
+            OutlinedButton(
+                onClick = { masCercano?.let { vm.seleccionar(it.lugar.id) } },
+                enabled = masCercano != null
+            ) {
+                Text("Ir al más cercano")
+            }
+
+            masCercano?.let { cercano ->
+                Text(
+                    "Más cercano: ${cercano.lugar.nombre} " +
+                        "(${cercano.metros?.let { formatearDistancia(it) } ?: "Sin calcular"})"
+                )
             }
 
             // Lista con altura fija debajo; al tocar una tarjeta se selecciona el lugar
