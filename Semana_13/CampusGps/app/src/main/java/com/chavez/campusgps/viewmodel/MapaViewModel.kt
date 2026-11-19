@@ -9,6 +9,7 @@ import com.chavez.campusgps.data.UbicacionRepository
 import com.chavez.campusgps.model.LugarConDistancia
 import com.chavez.campusgps.model.Posicion
 import com.chavez.campusgps.model.TipoError
+import com.chavez.campusgps.util.dentroDelRadio
 import com.chavez.campusgps.util.distanciaMetros
 import com.chavez.campusgps.model.UbicacionUi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,10 +41,16 @@ class MapaViewModel(
     private val _categoria = MutableStateFlow<String?>(null)
     val categoria: StateFlow<String?> = _categoria.asStateFlow()
 
-    // Lista filtrada por categoría: la usan el mapa, la lista y el "más cercano"
+    // Radio de cercanía en metros; null = "Sin radio"
+    private val _radio = MutableStateFlow<Int?>(null)
+    val radio: StateFlow<Int?> = _radio.asStateFlow()
+
+    // Lista filtrada por categoría y marcada con "dentro del radio":
+    // la usan el mapa, la lista y el "más cercano"
     val lugares: StateFlow<List<LugarConDistancia>> =
-        combine(_lugares, _categoria) { lista, cat ->
-            if (cat == null) lista else lista.filter { it.lugar.categoria == cat }
+        combine(_lugares, _categoria, _radio) { lista, cat, radio ->
+            val filtrada = if (cat == null) lista else lista.filter { it.lugar.categoria == cat }
+            filtrada.map { it.copy(dentroDelRadio = dentroDelRadio(it.metros, radio)) }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), _lugares.value)
 
     private val _seleccionado = MutableStateFlow<Int?>(null)
@@ -85,6 +92,10 @@ class MapaViewModel(
 
     fun seleccionar(id: Int?) {
         _seleccionado.value = id
+    }
+
+    fun seleccionarRadio(metros: Int?) {
+        _radio.value = metros
     }
 
     // Tocar la categoría ya activa la quita (vuelve a "Todos"); null también es "Todos"

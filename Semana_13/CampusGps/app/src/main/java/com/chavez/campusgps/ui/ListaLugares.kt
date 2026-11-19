@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -66,6 +67,13 @@ fun ListaLugares(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        if (item.dentroDelRadio) {
+                            SuggestionChip(
+                                onClick = { onClick(item.lugar.id) },
+                                label = { Text("Dentro del radio") },
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
                     }
                     Text(item.metros?.let { formatearDistancia(it) } ?: "Sin calcular")
                 }

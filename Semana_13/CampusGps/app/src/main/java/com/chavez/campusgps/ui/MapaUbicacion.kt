@@ -1,5 +1,6 @@
 package com.chavez.campusgps.ui
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
@@ -10,6 +11,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -21,8 +23,10 @@ fun MapaUbicacion(
     lugares: List<LugarConDistancia>,
     seleccionado: Int?,
     masCercanoId: Int?,
+    radio: Int?,
     modifier: Modifier = Modifier
 ) {
+    val colorRadio = MaterialTheme.colorScheme.primary
     val camara = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(-12.0464, -77.0428), 12f)
     }
@@ -57,6 +61,16 @@ fun MapaUbicacion(
                     position = LatLng(estado.posicion.latitud, estado.posicion.longitud)
                 ),
                 title = "Estás aquí"
+            )
+        }
+        // círculo del radio alrededor de mi posición (solo con ubicación y radio elegido)
+        if (estado is UbicacionUi.Lista && radio != null) {
+            Circle(
+                center = LatLng(estado.posicion.latitud, estado.posicion.longitud),
+                radius = radio.toDouble(),
+                strokeColor = colorRadio,
+                strokeWidth = 4f,
+                fillColor = colorRadio.copy(alpha = 0.15f)
             )
         }
         // un marcador azul por cada lugar

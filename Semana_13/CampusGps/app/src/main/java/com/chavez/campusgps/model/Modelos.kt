@@ -11,7 +11,12 @@ data class Lugar(
 )
 
 // metros = null mientras todavía no se conoce la ubicación del usuario
-data class LugarConDistancia(val lugar: Lugar, val metros: Float?)
+// dentroDelRadio lo calcula el ViewModel según el radio elegido
+data class LugarConDistancia(
+    val lugar: Lugar,
+    val metros: Float?,
+    val dentroDelRadio: Boolean = false
+)
 //commit 9
 enum class TipoError { SIN_PERMISO, GPS_APAGADO, SIN_PLAY_SERVICES, OTRO }
 
