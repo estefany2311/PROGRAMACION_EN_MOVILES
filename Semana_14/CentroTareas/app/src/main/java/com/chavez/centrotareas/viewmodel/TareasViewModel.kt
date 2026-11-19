@@ -7,16 +7,13 @@ import com.chavez.centrotareas.data.TareasRepository
 import com.chavez.centrotareas.model.CargaUi
 import com.chavez.centrotareas.model.PrimosUi
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
@@ -42,13 +39,8 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
                 _progreso.value = 0f
                 _mensaje.value = "Trabajando..."
                 Log.d("HILO", "Antes: ${Thread.currentThread().name}")
-                withContext(Dispatchers.Default) {
-                    Log.d("HILO", "Dentro: ${Thread.currentThread().name}")
-                    for (i in 1..100) {
-                        delay(40) // delay revisa la cancelación
-                        _progreso.value = i / 100f
-                    }
-                }
+                // F2M1 El trabajo vive en el Repository (Flow + flowOn); aquí solo se recoge
+                repo.tareaConProgreso().collect { _progreso.value = it }
                 Log.d("HILO", "Despues: ${Thread.currentThread().name}")
                 _mensaje.value = "Terminó"
             } finally {
@@ -62,7 +54,7 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         trabajo?.cancel()
         _mensaje.value = "Cancelado"
     }
-    // TODO Paso 4: trabajo (Job), corriendo y cancelar()
+
 
     // ----- Contar primos (paso 5)
     private val _primos = MutableStateFlow<PrimosUi>(PrimosUi.Inicial)
