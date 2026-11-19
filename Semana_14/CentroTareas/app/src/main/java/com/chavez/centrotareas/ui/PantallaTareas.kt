@@ -65,13 +65,21 @@ fun PantallaTareas(viewModel: TareasViewModel) {
 private fun TarjetaProgreso(viewModel: TareasViewModel) {
     val mensaje by viewModel.mensaje.collectAsState()
     val progreso by viewModel.progreso.collectAsState()
+    val corriendo by viewModel.corriendo.collectAsState()
 
     var toques by remember { mutableIntStateOf(0) }
 //paso1
     TarjetaTarea(titulo = "Tarea con progreso") {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = { toques++ }) { Text("Tócame: $toques") }
-            Button(onClick = { viewModel.tareaLarga() }) { Text("Iniciar") }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = { viewModel.tareaLarga() }, enabled = !corriendo) {
+                Text("Iniciar")
+            }
+            OutlinedButton(onClick = { viewModel.cancelar() }, enabled = corriendo) {
+                Text("Cancelar")
+            }
         }
         LinearProgressIndicator(
             progress = { progreso },
