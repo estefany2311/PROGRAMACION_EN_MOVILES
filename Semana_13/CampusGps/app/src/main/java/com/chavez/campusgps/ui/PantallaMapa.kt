@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -108,6 +109,16 @@ fun PantallaMapa(vm: MapaViewModel) {
                     Text("Lat: ${e.posicion.latitud}  Lon: ${e.posicion.longitud}")
                 is UbicacionUi.Error -> Text(e.mensaje, color = MaterialTheme.colorScheme.error)
             }
+
+            // Lista con altura fija debajo; al tocar una tarjeta se selecciona el lugar
+            ListaLugares(
+                lugares = lugares,
+                seleccionado = seleccionado,
+                onClick = { vm.seleccionar(it) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)
+            )
         }
     }
 }

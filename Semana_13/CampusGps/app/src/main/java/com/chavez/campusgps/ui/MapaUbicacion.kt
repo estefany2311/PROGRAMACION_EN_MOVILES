@@ -38,6 +38,16 @@ fun MapaUbicacion(
         }
     }
 
+    // al seleccionar un lugar, la cámara viaja hasta él (zoom 17)
+    LaunchedEffect(seleccionado) {
+        val lugar = lugares.firstOrNull { it.lugar.id == seleccionado }?.lugar
+        if (lugar != null) {
+            camara.animate(
+                CameraUpdateFactory.newLatLngZoom(LatLng(lugar.latitud, lugar.longitud), 17f)
+            )
+        }
+    }
+
     GoogleMap(modifier = modifier, cameraPositionState = camara) {
         //  marcador "Estás aquí" solo si ya hay ubicación
         if (estado is UbicacionUi.Lista) {
