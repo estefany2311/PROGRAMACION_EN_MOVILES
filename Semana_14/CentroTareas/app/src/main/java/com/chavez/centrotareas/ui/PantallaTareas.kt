@@ -12,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -63,14 +64,23 @@ fun PantallaTareas(viewModel: TareasViewModel) {
 @Composable
 private fun TarjetaProgreso(viewModel: TareasViewModel) {
     val mensaje by viewModel.mensaje.collectAsState()
+    val progreso by viewModel.progreso.collectAsState()
 
     var toques by remember { mutableIntStateOf(0) }
 //paso1
     TarjetaTarea(titulo = "Tarea con progreso") {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = { toques++ }) { Text("Tócame: $toques") }
-            Button(onClick = { viewModel.tareaLarga() }) { Text("Tarea larga") }
+            Button(onClick = { viewModel.tareaLarga() }) { Text("Iniciar") }
         }
+        LinearProgressIndicator(
+            progress = { progreso },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Text(
+            text = "${(progreso * 100).toInt()} %",
+            style = MaterialTheme.typography.bodyMedium
+        )
         Text(text = mensaje, style = MaterialTheme.typography.bodyMedium)
     }
 }
