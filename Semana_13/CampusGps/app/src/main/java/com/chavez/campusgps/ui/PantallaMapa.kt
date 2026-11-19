@@ -4,9 +4,9 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,23 +26,25 @@ import androidx.core.content.ContextCompat
 import com.chavez.campusgps.model.UbicacionUi
 import com.chavez.campusgps.viewmodel.MapaViewModel
 
-// Ejemplo resuelto (Paso 0): solo muestra latitud y longitud.
-// Los pasos siguientes agregan permiso, mapa, lista y errores.
+// Pantalla principal: mapa arriba, botón y texto debajo.
+// Los siguientes pasos agregan lista, más cercano y errores.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaMapa(vm: MapaViewModel) {
     val estado by vm.estado.collectAsState()
+    val lugares by vm.lugares.collectAsState()
+    val seleccionado by vm.seleccionado.collectAsState()
     val contexto = LocalContext.current
 
     val lanzador = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { resultado ->
-        // TODO 1: si algún valor es true -> buscar; si no -> permiso denegado
+        // si algún valor es true -> buscar; si no -> permiso denegado
         if (resultado.values.any { it }) vm.buscar() else vm.permisoDenegado()
     }
 
     fun alPulsar() {
-        // TODO 2: ¿ya tiene FINE o COARSE? -> buscar sin preguntar
+        // ¿ya tiene FINE o COARSE? -> buscar sin preguntar
         val tienePermiso = listOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
@@ -52,7 +54,7 @@ fun PantallaMapa(vm: MapaViewModel) {
         if (tienePermiso) {
             vm.buscar()
         } else {
-            // TODO 3: si no, pedir los permisos
+            // si no, pedir los permisos
             lanzador.launch(
                 arrayOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
@@ -77,14 +79,24 @@ fun PantallaMapa(vm: MapaViewModel) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
+                .padding(padding),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
+            MapaUbicacion(
+                estado = estado,
+                lugares = lugares,
+                seleccionado = seleccionado,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            )
+
+            // Botón y texto debajo del mapa
             Button(
                 onClick = { alPulsar() },
-                enabled = estado !is UbicacionUi.Buscando
+                enabled = estado !is UbicacionUi.Buscando,
+                modifier = Modifier.padding(vertical = 8.dp)
             ) {
                 Text("Obtener mi ubicación")
             }
@@ -92,10 +104,8 @@ fun PantallaMapa(vm: MapaViewModel) {
             when (val e = estado) {
                 UbicacionUi.Inicial -> Text("Pulsa el botón para obtener tu ubicación")
                 UbicacionUi.Buscando -> Text("Buscando…")
-                is UbicacionUi.Lista -> {
-                    Text("Latitud: ${e.posicion.latitud}")
-                    Text("Longitud: ${e.posicion.longitud}")
-                }
+                is UbicacionUi.Lista ->
+                    Text("Lat: ${e.posicion.latitud}  Lon: ${e.posicion.longitud}")
                 is UbicacionUi.Error -> Text(e.mensaje, color = MaterialTheme.colorScheme.error)
             }
         }
