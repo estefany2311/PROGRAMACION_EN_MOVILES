@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
-
+//estados y corrutinas
 class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
     // ----- Tarea con progreso
