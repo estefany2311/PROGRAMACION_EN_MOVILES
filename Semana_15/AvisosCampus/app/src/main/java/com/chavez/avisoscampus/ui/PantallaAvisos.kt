@@ -55,6 +55,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
 
     val permiso by vm.permiso.collectAsState()
     val faltan by vm.faltan.collectAsState()
+    val avisos by vm.avisos.collectAsState()
 
     val lanzador = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -158,9 +159,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                 )
             }
 
-            TarjetaFuncion("Historial") {
-                Text("Sin avisos todavía", style = MaterialTheme.typography.bodyMedium)
-            }
+            HistorialAvisos(avisos)
         }
     }
 }
@@ -183,7 +182,7 @@ private fun EtiquetaPermiso(permiso: PermisoUi) {
 }
 
 @Composable
-private fun TarjetaFuncion(titulo: String, contenido: @Composable ColumnScope.() -> Unit) {
+internal fun TarjetaFuncion(titulo: String, contenido: @Composable ColumnScope.() -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
