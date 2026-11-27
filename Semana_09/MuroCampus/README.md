@@ -1,87 +1,38 @@
-# MuroCampus
 
-Laboratorio 9 **Servicios Web y plataforma REST**.
+## Fase 2: mejoras asistidas por IA (rama `CON-IA`)
 
-MuroCampus es una app Android que consume el servicio REST de
-[JSONPlaceholder](https://jsonplaceholder.typicode.com/). Lista publicaciones, muestra el
-detalle de cada una con sus comentarios, filtra por usuario y crea una publicación nueva.
-Si no hay internet o el servidor falla, la app no se cierra: muestra un mensaje y un botón
-**Reintentar**.
+Se implementaron 3 mejoras sin romper la arquitectura MVVM + Repository. La primera cambia
+la API y el Repository, como pide el laboratorio. El detalle de cada prompt, lo que se
+cambió y por qué está en [PROMPTS.md](PROMPTS.md).
 
-**Tecnologías:** Kotlin, Jetpack Compose con Material 3, Retrofit, OkHttp,
-kotlinx.serialization, corrutinas y MVVM + Repository.
+| # | Mejora | Qué hace | Capas que cambian |
+|---|--------|----------|-------------------|
+| 1 | Borrar publicación | Botón **Eliminar** en el detalle con confirmación; envía `DELETE posts/{id}` y revisa el código con `Response<Unit>` | API + Repository + ViewModel + View |
+| 2 | Búsqueda | Campo **Buscar por título** que filtra las publicaciones ya descargadas, sin llamar a la red | ViewModel + View |
+| 3 | Encabezado con interceptor | Un `Interceptor` de OkHttp agrega `Accept: application/json` a todas las peticiones | RetrofitClient |
 
-## Endpoints usados
+### Cómo funciona cada mejora
 
-| Para...               | Verbo y ruta              | Función de `PostApi` |
-|-----------------------|---------------------------|----------------------|
-| Listar publicaciones  | `GET posts`               | `listar()`           |
-| Ver una publicación   | `GET posts/{id}`          | `detalle(id)`        |
-| Ver sus comentarios   | `GET posts/{id}/comments` | `comentarios(id)`    |
-| Filtrar por usuario   | `GET posts?userId=N`      | `porUsuario(userId)` |
-| Crear una publicación | `POST posts` (JSON)       | `crear(nuevo)`       |
+- **Borrar:**
+  - Con `Response<Unit>`, Retrofit no lanza excepción si el servidor responde 404 o 500. Por eso el Repository revisa `isSuccessful` y, si falla, lo convierte en `Result.failure`.
+  - El ViewModel solo recibe `Result<Unit>`: nunca ve `Response` ni `HttpException`.
+  - Como JSONPlaceholder no borra de verdad, la publicación se quita de la lista en memoria.
+- **Búsqueda:**
+  - El ViewModel combina la lista y el texto con `combine` + `stateIn` para producir `listaVisible`. La búsqueda ignora mayúsculas y los espacios de los extremos.
+  - Se aplica sobre el filtro de usuario activo y sobrevive a la rotación.
+- **Interceptor:**
+  - Se registra antes del `HttpLoggingInterceptor`, así Logcat muestra cada petición ya con el encabezado.
+  - Ninguna otra capa se entera del cambio.
 
-## Estructura de paquetes
+### Reglas que se mantuvieron
 
-```
-com.chavez.murocampus/
-├── MainActivity.kt              Scaffold, navegación con estado y armado del ViewModel
-├── model/
-│   └── Modelos.kt               Post, Comentario, NuevoPost (@Serializable)
-├── data/
-│   ├── remote/
-│   │   ├── PostApi.kt           Interface de Retrofit (@GET, @POST, @Path, @Query, @Body)
-│   │   └── RetrofitClient.kt    Retrofit + OkHttp + conversor JSON (se crea una sola vez)
-│   ├── PostRepository.kt        Interface + PostRepositoryRemote (devuelve Result)
-│   └── MensajeDeError.kt        mensajeDe(): convierte la excepción en texto
-├── viewmodel/
-│   ├── UiState.kt               Cargando / Exito / Error
-│   ├── PostsViewModel.kt        Lista, detalle, filtro y crear
-│   └── PostsViewModelFactory.kt Crea el ViewModel con su Repository
-└── ui/
-    ├── Componentes.kt           TarjetaPost, Cargando, ErrorConReintento
-    ├── PantallaLista.kt         Chips de filtro + lista de publicaciones
-    ├── PantallaDetalle.kt       Publicación completa + comentarios
-    ├── PantallaCrear.kt         Formulario y resultado del POST
-    └── theme/                   Colores (azul), tipografía y tema
-```
+- `viewmodel/` no contiene Retrofit, `PostApi`, `HttpException`, `Response` ni `Context`.
+- Las pantallas solo hablan con `PostsViewModel`, nunca con la API.
+- El Repository siempre devuelve `Result` y relanza `CancellationException` antes de capturar `Exception`.
+- Sin `GlobalScope`: todas las corrutinas usan `viewModelScope`.
 
-## Arquitectura MVVM + Repository
+### Capturas de la Fase 2
 
-| Capa                | Conoce a                              | No debe                                       |
-|---------------------|---------------------------------------|-----------------------------------------------|
-| View (`ui/`)        | Solo a su ViewModel                   | Llamar a Retrofit ni conocer PostApi          |
-| ViewModel           | Solo a la interface `PostRepository`  | Usar Retrofit, PostApi, HttpException, Context |
-| Repository (`data/`) | `PostApi` y las excepciones de red   | Conocer la UI ni dejar escapar excepciones    |
-| `data/remote`       | Retrofit, OkHttp y el JSON            | Guardar estado de pantalla                    |
-
-## Capturas
-
-| Lista | Detalle | Filtro | Crear | Error de conexión |
-|-------|---------|--------|-------|-------------------|
-|  |  |  |  |  |
-
-## Para pensar
-
-**1. ¿Qué diferencia hay entre GET y POST? ¿Por qué crear lleva `@Body` y porUsuario lleva `@Query`?**
-
-GET pide datos y POST envía datos nuevos para crear algo. crear usa @Body para mandar el objeto completo en el cuerpo de la petición, mientras porUsuario usa @Query porque solo agrega un filtro simple al final de la URL (posts?userId=2).
-
-**2. ¿Por qué la ruta es `"posts"` y no `"/posts"`?**
-
-Porque la URL base ya termina con /. Si pongo "/posts", Retrofit reemplaza la ruta anterior en vez de pegarla a continuación.
-
-**3. ¿Por qué el Repository devuelve `Result` en vez de dejar que la excepción llegue al ViewModel?**
-
-Para mantener limpio el ViewModel sin que sepa nada de Retrofit o errores de red; el Repository atrapa cualquier fallo y solo le avisa si todo salió bien o mal.
-
-**4. ¿Qué pasa si olvidas el permiso INTERNET? ¿Y si olvidas `ignoreUnknownKeys` y el servidor agrega un campo nuevo?**
-
-Sin INTERNET, Android bloquea la conexión y siempre saldrá error de red. Sin ignoreUnknownKeys, la app fallará con un error al no saber qué hacer con ese campo nuevo del JSON.
-
-**5. ¿Por qué la pantalla de lista usa un `when` sobre `UiState` y no un `if` con tres variables?**
-
-Porque UiState garantiza un solo estado a la vez (cargando, éxito o error), evitando que con varios if se muestren dos estados al mismo tiempo por accidente.
-**6. JSONPlaceholder no guarda los POST. ¿Cómo cambiaría tu app si usaras un servicio real?**
-
-El post sí se guardaría de verdad, así que tendría que recargar la lista al volver para verlo y usar un inicio de sesión real en lugar de poner userId = 1 fijo.
+| Eliminar (confirmación) | Búsqueda | Logcat con `Accept` |
+|-------------------------|----------|---------------------|
+|  |  |  |
