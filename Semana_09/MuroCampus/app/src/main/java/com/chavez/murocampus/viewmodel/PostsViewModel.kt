@@ -37,6 +37,10 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
     private val _creado = MutableStateFlow<UiState<Post>?>(null)
     val creado = _creado.asStateFlow()
 
+    // Resultado del DELETE: null = no se pidió; Exito lleva el id borrado.
+    private val _borrado = MutableStateFlow<UiState<Int>?>(null)
+    val borrado = _borrado.asStateFlow()
+
     // Si llega una carga nueva antes de que termine la anterior, se cancela la vieja.
     private var trabajoLista: Job? = null
     private var trabajoDetalle: Job? = null
@@ -78,7 +82,31 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
         if (_creado.value !is UiState.Cargando) _creado.value = null
     }
 
+    // Borra la publicación. JSONPlaceholder no borra de verdad, así que también se quita
+    // de la lista que ya está en memoria para que el usuario vea el efecto.
+    fun borrar(id: Int) {
+        if (_borrado.value is UiState.Cargando) return // evita doble envío
+        viewModelScope.launch {
+            _borrado.value = UiState.Cargando
+            repo.borrar(id)
+                .onSuccess {
+                    val actual = _lista.value
+                    if (actual is UiState.Exito) {
+                        _lista.value = UiState.Exito(actual.datos.filterNot { it.id == id })
+                    }
+                    _borrado.value = UiState.Exito(id)
+                }
+                .onFailure { _borrado.value = UiState.Error(mensajeDe(it)) }
+        }
+    }
+
+    // La pantalla avisa que ya atendió el resultado del borrado.
+    fun reiniciarBorrado() {
+        if (_borrado.value !is UiState.Cargando) _borrado.value = null
+    }
+
     fun abrir(id: Int) {
+        _borrado.value = null
         trabajoDetalle?.cancel()
         trabajoDetalle = viewModelScope.launch {
             _detalle.value = UiState.Cargando

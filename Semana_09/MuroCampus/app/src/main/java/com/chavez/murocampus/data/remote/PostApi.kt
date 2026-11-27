@@ -3,7 +3,9 @@ package com.chavez.murocampus.data.remote
 import com.chavez.murocampus.model.Comentario
 import com.chavez.murocampus.model.NuevoPost
 import com.chavez.murocampus.model.Post
+import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -32,4 +34,8 @@ interface PostApi {
     // POST posts con el JSON de NuevoPost en el cuerpo
     @POST("posts")
     suspend fun crear(@Body nuevo: NuevoPost): Post
+
+    // DELETE posts/{id}: la respuesta viene vacía; Response<Unit> permite revisar el código.
+    @DELETE("posts/{id}")
+    suspend fun borrar(@Path("id") id: Int): Response<Unit>
 }

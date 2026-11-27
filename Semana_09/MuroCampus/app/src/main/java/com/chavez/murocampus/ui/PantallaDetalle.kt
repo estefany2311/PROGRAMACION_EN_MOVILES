@@ -8,13 +8,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -27,9 +35,39 @@ import com.chavez.murocampus.viewmodel.UiState
 fun PantallaDetalle(
     vm: PostsViewModel,
     id: Int,
+    onBorrado: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val estado by vm.detalle.collectAsStateWithLifecycle()
+    val borrado by vm.borrado.collectAsStateWithLifecycle()
+    var confirmar by rememberSaveable { mutableStateOf(false) }
+
+    // Cuando el DELETE sale bien, se vuelve a la lista (ya sin esa publicación).
+    LaunchedEffect(borrado) {
+        if (borrado is UiState.Exito) {
+            vm.reiniciarBorrado()
+            onBorrado()
+        }
+    }
+
+    if (confirmar) {
+        AlertDialog(
+            onDismissRequest = { confirmar = false },
+            title = { Text("¿Eliminar publicación?") },
+            text = { Text("Se enviará DELETE posts/$id al servicio.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmar = false
+                    vm.borrar(id)
+                }) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmar = false }) { Text("Cancelar") }
+            }
+        )
+    }
 
     when (val e = estado) {
         is UiState.Cargando -> Cargando(texto = "Cargando publicación…", modifier = modifier)
@@ -64,6 +102,25 @@ fun PantallaDetalle(
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(top = 8.dp)
                     )
+                    val eliminando = borrado is UiState.Cargando
+                    OutlinedButton(
+                        onClick = { confirmar = true },
+                        enabled = !eliminando,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        ),
+                        modifier = Modifier.padding(top = 12.dp)
+                    ) {
+                        Text(if (eliminando) "Eliminando…" else "Eliminar")
+                    }
+                    (borrado as? UiState.Error)?.let { error ->
+                        Text(
+                            text = error.mensaje,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
                     HorizontalDivider(modifier = Modifier.padding(top = 16.dp))
                 }
                 item {

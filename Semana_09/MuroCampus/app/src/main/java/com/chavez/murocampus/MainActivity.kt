@@ -83,7 +83,12 @@ class MainActivity : ComponentActivity() {
                         seleccionado != null -> {
                             // Atrás del sistema: vuelve a la lista (que sigue en memoria, sin recargar).
                             BackHandler { idSeleccionado = null }
-                            PantallaDetalle(vm = vm, id = seleccionado, modifier = contenido)
+                            PantallaDetalle(
+                                vm = vm,
+                                id = seleccionado,
+                                onBorrado = { idSeleccionado = null },
+                                modifier = contenido
+                            )
                         }
 
                         else -> PantallaLista(
