@@ -68,6 +68,7 @@ private fun EtiquetaOrigen(origen: Origen) {
         Origen.BOTON -> colores.primary to colores.onPrimary
         Origen.RECORDATORIO -> colores.tertiary to colores.onTertiary
         Origen.MODO_AVION -> colores.secondary to colores.onSecondary
+        Origen.CARGADOR -> colores.primaryContainer to colores.onPrimaryContainer
     }
     Surface(color = fondo, contentColor = contenido, shape = MaterialTheme.shapes.extraSmall) {
         Text(

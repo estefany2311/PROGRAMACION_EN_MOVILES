@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.chavez.avisoscampus.model.PermisoUi
 import com.chavez.avisoscampus.notificacion.Notificador
+import com.chavez.avisoscampus.receiver.CargadorReceiver
 import com.chavez.avisoscampus.receiver.ModoAvionReceiver
 import com.chavez.avisoscampus.viewmodel.AvisosViewModel
 
@@ -79,6 +81,27 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                 contexto,
                 receptor,
                 IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED),
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
+            onDispose { contexto.unregisterReceiver(receptor) }
+        } else {
+            onDispose { }
+        }
+    }
+
+    val escuchandoCargador by vm.escuchandoCargador.collectAsState()
+
+    DisposableEffect(escuchandoCargador) {
+        if (escuchandoCargador) {
+            val receptor = CargadorReceiver { conectado -> vm.alCambiarCargador(conectado) }
+            val filtro = IntentFilter().apply {
+                addAction(Intent.ACTION_POWER_CONNECTED)
+                addAction(Intent.ACTION_POWER_DISCONNECTED)
+            }
+            ContextCompat.registerReceiver(
+                contexto,
+                receptor,
+                filtro,
                 ContextCompat.RECEIVER_NOT_EXPORTED
             )
             onDispose { contexto.unregisterReceiver(receptor) }
@@ -184,6 +207,25 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                 }
                 Text(
                     "Activa o desactiva el modo avión del celular",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                HorizontalDivider()
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Escuchar el cargador", style = MaterialTheme.typography.bodyMedium)
+                    Switch(
+                        checked = escuchandoCargador,
+                        onCheckedChange = { vm.cambiarEscuchaCargador(it) }
+                    )
+                }
+                Text(
+                    "Conecta o desconecta el cable de carga",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
