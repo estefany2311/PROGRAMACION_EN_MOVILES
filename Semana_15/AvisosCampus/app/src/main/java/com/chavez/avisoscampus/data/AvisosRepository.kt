@@ -16,7 +16,8 @@ interface AvisosRepository {
         titulo: String,
         texto: String,
         origen: Origen,
-        prioridad: Prioridad = Prioridad.NORMAL
+        prioridad: Prioridad = Prioridad.NORMAL,
+        detalle: String? = null
     ): Aviso
 }
 
@@ -29,10 +30,11 @@ class AvisosRepositoryMemoria : AvisosRepository {
         titulo: String,
         texto: String,
         origen: Origen,
-        prioridad: Prioridad
+        prioridad: Prioridad,
+        detalle: String?
     ): Aviso {
         val hora = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-        val aviso = Aviso(siguiente++, titulo, texto, origen, hora, prioridad)
+        val aviso = Aviso(siguiente++, titulo, texto, origen, hora, prioridad, detalle)
         _avisos.value = listOf(aviso) + _avisos.value // lo más reciente arriba
         return aviso
     }

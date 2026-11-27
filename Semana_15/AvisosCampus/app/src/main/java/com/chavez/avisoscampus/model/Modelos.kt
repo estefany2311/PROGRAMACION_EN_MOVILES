@@ -15,7 +15,8 @@ data class Aviso(
     val texto: String,
     val origen: Origen,
     val hora: String,
-    val prioridad: Prioridad = Prioridad.NORMAL
+    val prioridad: Prioridad = Prioridad.NORMAL,
+    val detalle: String? = null // texto completo que se ve al expandir la notificación
 )
 
 sealed interface PermisoUi {
