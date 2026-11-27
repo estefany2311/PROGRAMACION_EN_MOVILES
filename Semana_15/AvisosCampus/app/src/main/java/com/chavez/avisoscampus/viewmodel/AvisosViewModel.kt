@@ -6,6 +6,8 @@ import com.chavez.avisoscampus.data.AvisosRepository
 import com.chavez.avisoscampus.model.Aviso
 import com.chavez.avisoscampus.model.Origen
 import com.chavez.avisoscampus.model.PermisoUi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,6 +40,34 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
             val aviso = repo.registrar("Tarea lista", "Tu entrega fue registrada", Origen.BOTON)
             _eventos.emit(aviso)
         }
+    }
+
+    private var trabajo: Job? = null
+    private val _faltan = MutableStateFlow<Int?>(null)
+    val faltan: StateFlow<Int?> = _faltan.asStateFlow()
+
+    fun recordarEn(segundos: Int = 10) {
+        if (trabajo?.isActive == true) return
+        trabajo = viewModelScope.launch {
+            try {
+                for (s in segundos downTo 1) {
+                    _faltan.value = s
+                    delay(1000)
+                }
+                val aviso = repo.registrar(
+                    "Recordatorio",
+                    "Revisa tu laboratorio pendiente",
+                    Origen.RECORDATORIO
+                )
+                _eventos.emit(aviso)
+            } finally {
+                _faltan.value = null // termine bien o cancelado
+            }
+        }
+    }
+
+    fun cancelarRecordatorio() {
+        trabajo?.cancel()
     }
 
 }
