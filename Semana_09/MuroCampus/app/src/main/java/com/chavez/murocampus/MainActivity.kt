@@ -1,6 +1,11 @@
 package com.chavez.murocampus
 
 import android.os.Bundle
+import android.util.Log
+import androidx.lifecycle.lifecycleScope
+import com.chavez.murocampus.data.remote.RetrofitClient
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -21,6 +26,20 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // PRUEBA TEMPORAL (Paso 4): se borra antes del commit
+        lifecycleScope.launch {
+            // TODO 3: listar y mostrar cuántas llegaron
+            try {
+                val posts = RetrofitClient.api.listar()
+                Log.d("MuroCampus", "Llegaron ${posts.size} publicaciones")
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("MuroCampus", "Fallo la prueba de red", e)
+            }
+        }
+
         setContent {
             MuroCampusTheme {
                 Scaffold(
