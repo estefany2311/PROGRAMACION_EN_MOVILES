@@ -9,6 +9,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -21,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.chavez.murocampus.data.PostRepositoryRemote
 import com.chavez.murocampus.data.remote.RetrofitClient
+import com.chavez.murocampus.ui.PantallaCrear
 import com.chavez.murocampus.ui.PantallaDetalle
 import com.chavez.murocampus.ui.PantallaLista
 import com.chavez.murocampus.ui.theme.MuroCampusTheme
@@ -41,8 +43,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MuroCampusTheme {
-                // Navegación simple con estado: null = lista; un id = detalle de esa publicación.
+                // Navegación simple con estado:
+                // creando = true -> Crear; idSeleccionado != null -> Detalle; si no, Lista.
                 var idSeleccionado by rememberSaveable { mutableStateOf<Int?>(null) }
+                var creando by rememberSaveable { mutableStateOf(false) }
+                val enLista = !creando && idSeleccionado == null
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -54,12 +59,34 @@ class MainActivity : ComponentActivity() {
                                 titleContentColor = MaterialTheme.colorScheme.onPrimary
                             )
                         )
+                    },
+                    floatingActionButton = {
+                        if (enLista) {
+                            FloatingActionButton(onClick = {
+                                vm.reiniciarPublicacion()
+                                creando = true
+                            }) {
+                                Text("+", style = MaterialTheme.typography.headlineMedium)
+                            }
+                        }
                     }
                 ) { innerPadding ->
                     val contenido = Modifier.padding(innerPadding)
                     val seleccionado = idSeleccionado
-                    if (seleccionado == null) {
-                        PantallaLista(
+                    when {
+                        creando -> {
+                            // Atrás del sistema: cierra el formulario y vuelve a la lista.
+                            BackHandler { creando = false }
+                            PantallaCrear(vm = vm, modifier = contenido)
+                        }
+
+                        seleccionado != null -> {
+                            // Atrás del sistema: vuelve a la lista (que sigue en memoria, sin recargar).
+                            BackHandler { idSeleccionado = null }
+                            PantallaDetalle(vm = vm, id = seleccionado, modifier = contenido)
+                        }
+
+                        else -> PantallaLista(
                             vm = vm,
                             onAbrir = { id ->
                                 idSeleccionado = id
@@ -67,10 +94,6 @@ class MainActivity : ComponentActivity() {
                             },
                             modifier = contenido
                         )
-                    } else {
-                        // Atrás del sistema: vuelve a la lista (que sigue en memoria, sin recargar).
-                        BackHandler { idSeleccionado = null }
-                        PantallaDetalle(vm = vm, id = seleccionado, modifier = contenido)
                     }
                 }
             }
