@@ -6,12 +6,16 @@ enum class Origen(val texto: String) {
     MODO_AVION("Modo avión")
 }
 
+// Qué tan importante es un aviso. Lo decide el ViewModel; el Notificador elige el canal.
+enum class Prioridad { NORMAL, URGENTE }
+
 data class Aviso(
     val id: Int,
     val titulo: String,
     val texto: String,
     val origen: Origen,
-    val hora: String
+    val hora: String,
+    val prioridad: Prioridad = Prioridad.NORMAL
 )
 
 sealed interface PermisoUi {

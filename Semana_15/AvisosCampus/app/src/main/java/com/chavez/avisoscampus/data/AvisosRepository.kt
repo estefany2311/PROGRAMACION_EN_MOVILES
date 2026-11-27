@@ -2,6 +2,7 @@ package com.chavez.avisoscampus.data
 
 import com.chavez.avisoscampus.model.Aviso
 import com.chavez.avisoscampus.model.Origen
+import com.chavez.avisoscampus.model.Prioridad
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,7 +12,12 @@ import java.util.Locale
 
 interface AvisosRepository {
     val avisos: StateFlow<List<Aviso>>
-    fun registrar(titulo: String, texto: String, origen: Origen): Aviso
+    fun registrar(
+        titulo: String,
+        texto: String,
+        origen: Origen,
+        prioridad: Prioridad = Prioridad.NORMAL
+    ): Aviso
 }
 
 class AvisosRepositoryMemoria : AvisosRepository {
@@ -19,9 +25,14 @@ class AvisosRepositoryMemoria : AvisosRepository {
     override val avisos: StateFlow<List<Aviso>> = _avisos.asStateFlow()
     private var siguiente = 1
 
-    override fun registrar(titulo: String, texto: String, origen: Origen): Aviso {
+    override fun registrar(
+        titulo: String,
+        texto: String,
+        origen: Origen,
+        prioridad: Prioridad
+    ): Aviso {
         val hora = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-        val aviso = Aviso(siguiente++, titulo, texto, origen, hora)
+        val aviso = Aviso(siguiente++, titulo, texto, origen, hora, prioridad)
         _avisos.value = listOf(aviso) + _avisos.value // lo más reciente arriba
         return aviso
     }

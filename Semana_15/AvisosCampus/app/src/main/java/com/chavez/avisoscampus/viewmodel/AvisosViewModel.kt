@@ -6,6 +6,7 @@ import com.chavez.avisoscampus.data.AvisosRepository
 import com.chavez.avisoscampus.model.Aviso
 import com.chavez.avisoscampus.model.Origen
 import com.chavez.avisoscampus.model.PermisoUi
+import com.chavez.avisoscampus.model.Prioridad
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -62,7 +63,8 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
                 val aviso = repo.registrar(
                     "Recordatorio",
                     "Revisa tu laboratorio pendiente",
-                    Origen.RECORDATORIO
+                    Origen.RECORDATORIO,
+                    Prioridad.URGENTE // el recordatorio va por el canal Urgentes
                 )
                 _eventos.emit(aviso)
             } finally {
