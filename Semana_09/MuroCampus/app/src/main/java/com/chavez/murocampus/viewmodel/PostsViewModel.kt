@@ -11,7 +11,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 // Lo que muestra la pantalla de detalle: la publicación y sus comentarios.
@@ -32,6 +36,22 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
     // null significa "Todos".
     private val _usuarioFiltro = MutableStateFlow<Int?>(null)
     val usuarioFiltro = _usuarioFiltro.asStateFlow()
+
+    // Texto que el usuario escribe para buscar por título.
+    private val _busqueda = MutableStateFlow("")
+    val busqueda = _busqueda.asStateFlow()
+
+    // Lo que dibuja la lista: las publicaciones ya descargadas filtradas por título.
+    // No hace otra llamada a la red: solo combina la lista con el texto de búsqueda.
+    val listaVisible: StateFlow<UiState<List<Post>>> =
+        combine(_lista, _busqueda) { estado, texto ->
+            val consulta = texto.trim()
+            if (estado is UiState.Exito && consulta.isNotEmpty()) {
+                UiState.Exito(estado.datos.filter { it.title.contains(consulta, ignoreCase = true) })
+            } else {
+                estado
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UiState.Cargando)
 
     // Resultado del POST: null = aún no se envió.
     private val _creado = MutableStateFlow<UiState<Post>?>(null)
@@ -58,6 +78,11 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
                 .onSuccess { _lista.value = UiState.Exito(it) }
                 .onFailure { _lista.value = UiState.Error(mensajeDe(it)) }
         }
+    }
+
+    // Actualiza el texto de búsqueda (la lista visible se recalcula sola).
+    fun buscar(texto: String) {
+        _busqueda.value = texto
     }
 
     // Guarda el filtro y recarga la lista.
