@@ -43,7 +43,8 @@ fun PantallaAvisos(vm: AvisosViewModel) {
     val contexto = LocalContext.current
     LaunchedEffect(Unit) {
         vm.eventos.collect { aviso ->
-
+            val mostrado = Notificador.mostrar(contexto, aviso)
+            // TODO Paso 8: si no se mostró, avisar al ViewModel
         }
     }
 
@@ -96,7 +97,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
             }
 
             TarjetaFuncion("Avisos") {
-                Button(onClick = { /* TODO Paso 3: vm.avisarAhora() */ }) { Text("Mostrar aviso") }
+                Button(onClick = { vm.avisarAhora() }) { Text("Mostrar aviso") }
             }
 
             TarjetaFuncion("Recordatorio") {
