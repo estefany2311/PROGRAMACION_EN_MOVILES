@@ -1,107 +1,97 @@
-# AvisosCampus
+# AvisosCampus · Fase 2 
 
-Laboratorio 15 · Programación en Móviles · **Notificaciones en Android**
+Laboratorio 15 · Programación en Móviles · **Notificaciones en Android** · Rama `CON-IA`
 
 ## Descripción
 
-AvisosCampus es una app Android que muestra notificaciones locales y escucha lo que pasa en el celular:
+En esta fase se mejoró AvisosCampus con ayuda de IA, sin romper la arquitectura MVVM + Repository. Se eligieron 3 mejoras de la guía:
 
-- **Avisos:** el botón *Mostrar aviso* publica la notificación "Tarea lista".
-- **Recordatorio:** *Recordar en 10 s* inicia una cuenta regresiva con corrutinas (cancelable) y al llegar a 0 muestra "Recordatorio".
-- **Receptor de anuncios:** con el switch *Escuchar el modo avión*, un `BroadcastReceiver` avisa cuando el modo avión se activa o desactiva.
-- **Historial:** todos los avisos quedan anotados, con lo más reciente arriba, su origen y su hora.
-- **Permiso:** pide `POST_NOTIFICATIONS` (Android 13+), muestra su estado y, si se niega, avisa y ofrece *Abrir ajustes* sin cerrar la app.
+| # | Mejora | Qué logra | Capas que cambian |
+|---|--------|-----------|-------------------|
+| 1 | **Dos canales** | Canal **Urgentes** (`IMPORTANCE_HIGH`, aparece como ventana emergente) además de **Avisos**. El recordatorio usa el canal urgente. | Modelo, Repository, ViewModel y Notificador |
+| 2 | **Texto largo** | Al expandir la notificación se ve el texto completo con `BigTextStyle`. | Modelo, Repository, ViewModel y Notificador |
+| 3 | **Receptor del cargador** | Con el switch *Escuchar el cargador*, avisa cuando se conecta o desconecta el cable (`ACTION_POWER_CONNECTED` / `ACTION_POWER_DISCONNECTED`). | Receiver, Modelo, ViewModel y View |
 
-Tecnologías: Kotlin, Jetpack Compose, Material 3, notificaciones locales (`NotificationCompat`), `BroadcastReceiver`, corrutinas y MVVM + Repository. Sin internet y solo con datos ficticios.
 
-## Estructura de paquetes
+## Cómo funciona cada mejora
+
+### 1. Dos canales
+- `model/Modelos.kt`: nuevo `enum class Prioridad { NORMAL, URGENTE }` y el campo `prioridad` en `Aviso` (por defecto `NORMAL`).
+- `viewmodel/AvisosViewModel.kt`: el recordatorio se registra como `Prioridad.URGENTE`. **El ViewModel decide** qué es urgente, sin usar `Context`.
+- `notificacion/Notificador.kt`: `crearCanal` crea los canales `avisos` y `urgentes`, y `mostrar()` elige el canal y la prioridad según `aviso.prioridad`.
+
+### 2. Texto largo
+- `model/Modelos.kt`: nuevo campo opcional `detalle` en `Aviso`.
+- `viewmodel/AvisosViewModel.kt`: "Tarea lista" y "Recordatorio" llevan un detalle largo. "Modo avión" y "Cargador" no.
+- `notificacion/Notificador.kt`: `setStyle(BigTextStyle().bigText(aviso.detalle ?: aviso.texto))`. Cerrada, la notificación muestra el texto corto; expandida, muestra el detalle. El historial sigue mostrando el texto corto.
+
+### 3. Receptor del cargador
+- `receiver/CargadorReceiver.kt` (nuevo): `onReceive` corto que convierte la acción en `true` (conectado) o `false` (desconectado).
+- `viewmodel/AvisosViewModel.kt`: `escuchandoCargador`, `cambiarEscuchaCargador(valor)` y `alCambiarCargador(conectado)`, que registra "Cargador · Conectado/Desconectado" y emite el evento.
+- `ui/PantallaAvisos.kt`: segundo `DisposableEffect(escuchandoCargador)` con `ContextCompat.registerReceiver(..., RECEIVER_NOT_EXPORTED)` y `unregisterReceiver` en `onDispose`. El switch está en la tarjeta *Receptor de anuncios*.
+- `ui/HistorialAvisos.kt`: etiqueta de color para el origen "Cargador".
+
+## Estructura de paquetes (archivos que cambiaron en la Fase 2)
 
 ```
 com.chavez.avisoscampus/
-├── AvisosApp.kt                  Application: crea el canal "avisos"
-├── MainActivity.kt               Obtiene el ViewModel con la factory y muestra la pantalla
 ├── model/
-│   └── Modelos.kt                Aviso, Origen, PermisoUi
+│   └── Modelos.kt                + Prioridad, Origen.CARGADOR, Aviso.prioridad y Aviso.detalle
 ├── data/
-│   └── AvisosRepository.kt       interface AvisosRepository + AvisosRepositoryMemoria
+│   └── AvisosRepository.kt       registrar(..., prioridad, detalle) con valores por defecto
 ├── notificacion/
-│   └── Notificador.kt            crearCanal, tienePermiso y mostrar (con PendingIntent)
+│   └── Notificador.kt            + canal "urgentes", elección de canal y BigTextStyle
 ├── receiver/
-│   └── ModoAvionReceiver.kt      BroadcastReceiver de ACTION_AIRPLANE_MODE_CHANGED
+│   └── CargadorReceiver.kt       NUEVO: ACTION_POWER_CONNECTED / DISCONNECTED
 ├── viewmodel/
-│   ├── AvisosViewModel.kt        Estado (avisos, permiso, faltan, escuchandoAvion, mensaje) y eventos
-│   └── AvisosViewModelFactory.kt
+│   └── AvisosViewModel.kt        + prioridad del recordatorio, detalles y escucha del cargador
 └── ui/
-    ├── PantallaAvisos.kt         Tarjetas: permiso, avisos, recordatorio y receptor
-    ├── HistorialAvisos.kt        Tarjeta Historial (no conoce el ViewModel)
-    └── theme/                    Tema Material 3 en azul
+    ├── PantallaAvisos.kt         + switch "Escuchar el cargador" y su DisposableEffect
+    └── HistorialAvisos.kt        + etiqueta del origen Cargador
 ```
 
-## Arquitectura MVVM
+## Arquitectura después de las mejoras
 
 ```
-View (PantallaAvisos, HistorialAvisos)
-   |  eventos: botones, switch                 ^  collectAsState()
-   v                                           |
-ViewModel (AvisosViewModel) --- StateFlow (avisos, permiso, faltan, escuchandoAvion, mensaje) --->
-   |  registra el aviso                        |  emite: eventos (SharedFlow<Aviso>)
-   v                                           v
-AvisosRepository (interface)              La View recibe el evento y llama a
-   -> AvisosRepositoryMemoria             Notificador.mostrar(context, aviso)
-                                               |
-                                               v
-                                   Sistema Android (canal, NotificationManagerCompat)
-
-ModoAvionReceiver --(activo)--> View --> vm.alCambiarModoAvion(activo)
+CargadorReceiver --(conectado)--> View --> vm.alCambiarCargador(conectado)
+                                                 |
+                                                 v
+ViewModel: decide el aviso (titulo, texto, detalle, prioridad)
+   |  repo.registrar(...)                    |  emite: eventos (SharedFlow<Aviso>)
+   v                                         v
+AvisosRepository (interface)            View -> Notificador.mostrar(context, aviso)
+                                                 |
+                                                 v
+                          URGENTE -> canal "urgentes"  |  NORMAL -> canal "avisos"
+                          + BigTextStyle con aviso.detalle
 ```
 
-| Capa | Conoce a | No debe |
-|------|----------|---------|
-| View (`ui/`) | Su ViewModel y el Notificador | Decidir qué se avisa ni guardar el historial |
-| ViewModel | Solo la interface del Repository | Usar Context, NotificationManager ni BroadcastReceiver |
-| Repository | Nada de la UI | Usar Context |
-| Notificador | El sistema (canal, NotificationManager) | Guardar estado de la app |
+Reglas que se mantienen después de usar la IA:
+- `viewmodel/` no tiene `Context`, `NotificationManager`, `BroadcastReceiver`, `Intent` ni imports de `android.content` o `android.app`.
+- Todo receptor registrado (`ModoAvionReceiver` y `CargadorReceiver`) se quita en `onDispose`.
+- El `PendingIntent` sigue siendo `FLAG_IMMUTABLE`.
+
+## Cómo probar
+
+1. Desinstala la app anterior e instala esta versión, para que el canal **Urgentes** se cree con importancia alta.
+2. **Dos canales:** pulsa *Recordar en 10 s* y, al llegar a 0, el aviso aparece como ventana emergente. *Mostrar aviso* sale solo en el panel.
+3. **Texto largo:** pulsa *Mostrar aviso* y expande la notificación para ver el texto completo.
+4. **Cargador:** activa *Escuchar el cargador* y conecta o desconecta el cable. Aparece "Cargador · Conectado/Desconectado" y queda en el historial. Con el switch apagado, no hay aviso.
 
 ## Capturas
 
-| 1. Notificación en el panel |
+| 1. Recordatorio en el canal Urgentes (ventana emergente) |
 |:---:|
-| <img src="capturas/01-notificacion.png" width="260" alt="Notificación en el panel"> |
+| <img src="capturas/fase2-01-urgente.png" width="260" alt="Recordatorio como ventana emergente"> |
 
-| 2. Recordatorio con cuenta regresiva |
+| 2. Notificación expandida con texto largo |
 |:---:|
-| <img src="capturas/02-recordatorio.png" width="260" alt="Recordatorio con cuenta regresiva"> |
+| <img src="capturas/fase2-02-texto-largo.png" width="260" alt="Notificación expandida con BigTextStyle"> |
 
-| 3. Aviso del modo avión |
+| 3. Aviso del cargador |
 |:---:|
-| <img src="capturas/03-modo-avion.png" width="260" alt="Aviso del modo avión"> |
+| <img src="capturas/fase2-03-cargador.png" width="260" alt="Aviso del cargador conectado"> |
 
-| 4. Historial de avisos |
+| 4. Historial con avisos del cargador |
 |:---:|
-| <img src="capturas/04-historial.png" width="260" alt="Historial de avisos"> |
-
-| 5. Permiso denegado con mensaje y *Abrir ajustes* |
-|:---:|
-| <img src="capturas/05-permiso-denegado.png" width="260" alt="Permiso denegado con mensaje y Abrir ajustes"> |
-
-## Para pensar
-
-**1. ¿Por qué una notificación necesita un canal y un permiso? ¿Qué pasa si falta cada uno?**
-
-El canal (Android 8+) agrupa las notificaciones y define cómo se muestran, y el usuario puede configurarlo en Ajustes. El permiso (Android 13+) es la autorización del usuario para recibir avisos. Si falta el canal, Android descarta la notificación y no aparece. Si falta el permiso, tampoco aparece: en mi app el aviso se guarda en el historial, pero se muestra un mensaje de error.
-
-**2. ¿Por qué el ViewModel emite un evento y no muestra la notificación él mismo?**
-
-Porque el ViewModel no debe tener `Context` ni tocar el sistema. Él solo decide qué avisar y lo anota en el Repository; la pantalla, que sí tiene `Context`, recibe el evento y llama al `Notificador`. Así se respeta MVVM y el ViewModel se puede probar sin Android.
-
-**3. ¿Qué pasa si usas el mismo id en dos notificaciones?**
-
-La segunda reemplaza a la primera y solo se ve una. Por eso uso `aviso.id`, que es distinto en cada aviso, y así aparecen dos notificaciones.
-
-**4. ¿Por qué onReceive debe ser corto y por qué hay que quitar el receptor al salir?**
-
-`onReceive` corre en el hilo principal y dispone de poco tiempo. Si hace un trabajo largo, la app se congela y Android puede mostrar el error "no responde". El receptor se quita en `onDispose` con `unregisterReceiver` para evitar fugas de memoria y para que no siga escuchando cuando la pantalla ya no existe.
-
-**5. ¿En qué casos usarías una notificación local y en cuáles una push de Firebase?**
-
-La local sirve cuando el aviso lo genera la propia app o el celular, sin internet: recordatorios, cuentas regresivas o cambios del sistema como el modo avión. La push de Firebase sirve cuando el mensaje viene de un servidor, como noticias, mensajes de otras personas o avisos de la universidad, incluso con la app cerrada.
+| <img src="capturas/fase2-04-historial.png" width="260" alt="Historial con avisos del cargador"> |
