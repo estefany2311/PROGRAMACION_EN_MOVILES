@@ -2,6 +2,7 @@ package com.chavez.murocampus
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -13,9 +14,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.chavez.murocampus.data.PostRepositoryRemote
 import com.chavez.murocampus.data.remote.RetrofitClient
+import com.chavez.murocampus.ui.PantallaDetalle
 import com.chavez.murocampus.ui.PantallaLista
 import com.chavez.murocampus.ui.theme.MuroCampusTheme
 import com.chavez.murocampus.viewmodel.PostsViewModel
@@ -35,6 +41,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MuroCampusTheme {
+                // Navegación simple con estado: null = lista; un id = detalle de esa publicación.
+                var idSeleccionado by rememberSaveable { mutableStateOf<Int?>(null) }
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = {
@@ -47,10 +56,22 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 ) { innerPadding ->
-                    PantallaLista(
-                        vm = vm,
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    val contenido = Modifier.padding(innerPadding)
+                    val seleccionado = idSeleccionado
+                    if (seleccionado == null) {
+                        PantallaLista(
+                            vm = vm,
+                            onAbrir = { id ->
+                                idSeleccionado = id
+                                vm.abrir(id)
+                            },
+                            modifier = contenido
+                        )
+                    } else {
+                        // Atrás del sistema: vuelve a la lista (que sigue en memoria, sin recargar).
+                        BackHandler { idSeleccionado = null }
+                        PantallaDetalle(vm = vm, id = seleccionado, modifier = contenido)
+                    }
                 }
             }
         }
