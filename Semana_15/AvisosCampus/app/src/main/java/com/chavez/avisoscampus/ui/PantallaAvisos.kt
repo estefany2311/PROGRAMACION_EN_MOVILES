@@ -1,6 +1,8 @@
 package com.chavez.avisoscampus.ui
 
 import android.Manifest
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -25,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,8 +35,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.chavez.avisoscampus.model.PermisoUi
 import com.chavez.avisoscampus.notificacion.Notificador
+import com.chavez.avisoscampus.receiver.ModoAvionReceiver
 import com.chavez.avisoscampus.viewmodel.AvisosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,6 +64,23 @@ fun PantallaAvisos(vm: AvisosViewModel) {
 
     LaunchedEffect(Unit) {
         if (Notificador.tienePermiso(contexto)) vm.permisoRespondido(true)
+    }
+
+    val escuchando by vm.escuchandoAvion.collectAsState()
+
+    DisposableEffect(escuchando) {
+        if (escuchando) {
+            val receptor = ModoAvionReceiver { activo -> vm.alCambiarModoAvion(activo) }
+            ContextCompat.registerReceiver(
+                contexto,
+                receptor,
+                IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED),
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
+            onDispose { contexto.unregisterReceiver(receptor) }
+        } else {
+            onDispose { }
+        }
     }
 
     Scaffold(
@@ -127,8 +149,13 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("Escuchar el modo avión", style = MaterialTheme.typography.bodyMedium)
-                    Switch(checked = false, onCheckedChange = { /* TODO Paso 6 */ })
+                    Switch(checked = escuchando, onCheckedChange = { vm.cambiarEscucha(it) })
                 }
+                Text(
+                    "Activa o desactiva el modo avión del celular",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             TarjetaFuncion("Historial") {
